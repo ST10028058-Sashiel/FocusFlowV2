@@ -1,15 +1,17 @@
-// UserPreferences.kt
 package com.st10028058.focusflowv2.data
 
 import android.content.Context
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private val Context.dataStore by preferencesDataStore(name = "settings")
+// Define the extension property OUTSIDE the class
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class UserPreferences(private val context: Context) {
+
     companion object {
         val DARK_MODE_KEY = booleanPreferencesKey("dark_mode")
         val NOTIFICATIONS_KEY = booleanPreferencesKey("notifications")

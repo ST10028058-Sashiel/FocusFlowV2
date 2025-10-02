@@ -79,6 +79,11 @@ dependencies {
     // Kotlin Coroutines
     implementation(libs.coroutines.android)
 
+    // ✅ DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.datastore:datastore-core:1.1.1")
+
+
     // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
