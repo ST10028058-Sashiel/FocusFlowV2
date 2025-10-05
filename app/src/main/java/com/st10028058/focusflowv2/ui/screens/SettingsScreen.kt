@@ -1,4 +1,3 @@
-// SettingsScreen.kt
 package com.st10028058.focusflowv2.ui.screens
 
 import androidx.compose.foundation.layout.*
@@ -9,10 +8,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 import com.st10028058.focusflowv2.viewmodel.SettingsViewModel
 
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
+fun SettingsScreen(
+    navController: NavController,
+    viewModel: SettingsViewModel = viewModel()
+) {
     val darkMode by viewModel.darkMode.collectAsState()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
     val displayName by viewModel.displayName.collectAsState()
@@ -36,14 +40,40 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text("Dark Mode")
-            Switch(checked = darkMode, onCheckedChange = { viewModel.setDarkMode(it) })
+            Switch(checked = darkMode, onCheckedChange = {
+                viewModel.setDarkMode(it)
+            })
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text("Notifications")
-            Switch(checked = notificationsEnabled, onCheckedChange = { viewModel.setNotifications(it) })
+            Switch(checked = notificationsEnabled, onCheckedChange = {
+                viewModel.setNotifications(it)
+            })
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        Button(
+            onClick = {
+                FirebaseAuth.getInstance().signOut()
+                navController.navigate("login") {
+                    popUpTo(0) { inclusive = true }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Logout")
         }
     }
 }

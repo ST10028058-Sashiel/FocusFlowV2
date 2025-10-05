@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.st10028058.focusflowv2" />
-                  <option name="mobileSdkAppId" value="1:326563688841:android:0e26099539848167adb158" />
-                  <option name="projectId" value="focusflowapp-1464f" />
-                  <option name="projectNumber" value="326563688841" />
+                  <option name="mobileSdkAppId" value="1:906573757921:android:84324f416c3702898c26a0" />
+                  <option name="projectId" value="focusflowv2" />
+                  <option name="projectNumber" value="906573757921" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

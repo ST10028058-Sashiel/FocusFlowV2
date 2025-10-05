@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">FocusFlowV2</string>
+
+    <string name="default_web_client_id">
+        906573757921-kcv3rovpjacjalrun5v8tlrh3ms27jal.apps.googleusercontent.com
+    </string>
 </resources>
