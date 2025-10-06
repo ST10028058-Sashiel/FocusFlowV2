@@ -23,9 +23,18 @@ class TaskViewModel : ViewModel() {
 
     fun addTask(task: Task) {
         viewModelScope.launch {
-            val res = repository.addTask(task)
-            if (res.isSuccessful) fetchTasks()
+            repository.addTask(task)
+            fetchTasks()
         }
+    }
+
+    suspend fun addTaskAndReturn(task: Task): Task? {
+        val res = repository.addTask(task)
+        if (res.isSuccessful) {
+            fetchTasks()
+            return res.body()
+        }
+        return null
     }
 
     fun updateTask(id: String, task: Task) {

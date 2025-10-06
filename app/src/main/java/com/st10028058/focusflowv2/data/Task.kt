@@ -1,18 +1,16 @@
 package com.st10028058.focusflowv2.data
 
 data class Task(
-    val _id: String? = null,              // MongoDB ID
+    val _id: String? = null,
     val title: String,
-    val priority: String,                 // "Low" | "Normal" | "High"
+    val priority: String,
     val completed: Boolean = false,
-
-    // Calendar-style fields
     val allDay: Boolean = false,
-    val startTime: Long? = null,          // epoch millis (nullable for allDay or unset)
-    val endTime: Long? = null,            // epoch millis
+    val startTime: Long? = null,
+    val endTime: Long? = null,
     val location: String? = null,
-    val reminderOffsetMinutes: Int? = 10, // e.g. 10 = "10 mins before" (nullable = none)
+    val reminderOffsetMinutes: Int? = 10,
+    val userId: String? = null,
 
-    // 🔐 Firebase UID (server fills this from token; keep nullable on client)
-    val userId: String? = null
+    val fcmToken: String? = null  // <-- new field
 )

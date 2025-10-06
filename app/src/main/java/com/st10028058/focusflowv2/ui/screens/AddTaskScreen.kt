@@ -27,9 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 import com.st10028058.focusflowv2.data.Task
+import com.st10028058.focusflowv2.notifications.TaskReminderScheduler
 import com.st10028058.focusflowv2.ui.nav.Routes
 import com.st10028058.focusflowv2.viewmodel.TaskViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -41,7 +46,6 @@ fun AddTaskScreen(
 ) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
-
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
@@ -56,7 +60,6 @@ fun AddTaskScreen(
 
     val scrollState = rememberScrollState()
 
-    // 🌈 Gradient background
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -80,20 +83,31 @@ fun AddTaskScreen(
                         val finalEnd = if (allDay) selectedDate else endTime ?: finalStart
                         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-                        val newTask = Task(
-                            title = title,
-                            priority = priority,
-                            allDay = allDay,
-                            startTime = finalStart,
-                            endTime = finalEnd,
-                            location = if (location.isBlank()) null else location,
-                            reminderOffsetMinutes = reminderOffset,
-                            userId = uid
-                        )
+                        // First get FCM token, then send task including it
+                        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                            val newTask = Task(
+                                title = title,
+                                priority = priority,
+                                allDay = allDay,
+                                startTime = finalStart,
+                                endTime = finalEnd,
+                                location = if (location.isBlank()) null else location,
+                                reminderOffsetMinutes = reminderOffset,
+                                userId = uid,
+                                fcmToken = token
+                            )
 
-                        viewModel.addTask(newTask)
-                        Toast.makeText(context, "Task added successfully", Toast.LENGTH_SHORT).show()
-                        navController.popBackStack()
+                            CoroutineScope(Dispatchers.Main).launch {
+                                val savedTask = viewModel.addTaskAndReturn(newTask)
+                                if (savedTask != null && savedTask.startTime != null && savedTask.reminderOffsetMinutes != null) {
+                                    TaskReminderScheduler.schedule(context, savedTask)
+                                    Toast.makeText(context, "Task added successfully", Toast.LENGTH_SHORT).show()
+                                    navController.popBackStack()
+                                } else {
+                                    Toast.makeText(context, "Failed to save task", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
                     },
                     containerColor = Color(0xFFE91E63),
                     shape = RoundedCornerShape(20.dp),
@@ -114,7 +128,6 @@ fun AddTaskScreen(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 🔙 Top Row with Back Arrow + Title
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
@@ -146,7 +159,6 @@ fun AddTaskScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // 🧾 Input Card
                 Card(
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -162,7 +174,6 @@ fun AddTaskScreen(
                         verticalArrangement = Arrangement.spacedBy(18.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // 📝 Title Input
                         OutlinedTextField(
                             value = title,
                             onValueChange = { title = it },
@@ -171,7 +182,6 @@ fun AddTaskScreen(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
 
-                        // 🔽 Priority Dropdown
                         var expanded by remember { mutableStateOf(false) }
                         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
                             OutlinedTextField(
@@ -197,7 +207,35 @@ fun AddTaskScreen(
                             }
                         }
 
-                        // ⏰ All-day Checkbox
+                        var expandedReminder by remember { mutableStateOf(false) }
+                        val reminderOptions = listOf(5, 10, 15, 30, 60)
+                        ExposedDropdownMenuBox(
+                            expanded = expandedReminder,
+                            onExpandedChange = { expandedReminder = it }
+                        ) {
+                            OutlinedTextField(
+                                value = "Remind me $reminderOffset min before",
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Reminder Time") },
+                                modifier = Modifier.menuAnchor().fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expandedReminder,
+                                onDismissRequest = { expandedReminder = false }
+                            ) {
+                                reminderOptions.forEach { minutes ->
+                                    DropdownMenuItem(
+                                        text = { Text("$minutes minutes before") },
+                                        onClick = {
+                                            reminderOffset = minutes
+                                            expandedReminder = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(checked = allDay, onCheckedChange = { allDay = it })
                             Text("All Day Task", fontSize = 14.sp)
@@ -205,7 +243,6 @@ fun AddTaskScreen(
 
                         Divider(color = Color(0xFFEEE7FF))
 
-                        // 📅 Date Section
                         if (selectedDate == null) {
                             StyledActionButton("Select Date", Color(0xFF6A0DAD)) {
                                 val now = Calendar.getInstance()
@@ -240,7 +277,6 @@ fun AddTaskScreen(
                             )
                         }
 
-                        // ⏱ Start & End Time
                         if (!allDay) {
                             if (startTime == null) {
                                 StyledActionButton("Select Start Time", Color(0xFF8B2BE2)) {
@@ -313,7 +349,6 @@ fun AddTaskScreen(
 
                         Divider(color = Color(0xFFEEE7FF))
 
-                        // 📍 Location Input
                         OutlinedTextField(
                             value = location,
                             onValueChange = { location = it },
@@ -330,7 +365,6 @@ fun AddTaskScreen(
     }
 }
 
-// 🎨 Centered display for date/time
 @Composable
 fun CenteredDateTimeDisplay(label: String, value: String, onChangeClick: () -> Unit) {
     Card(
@@ -369,7 +403,6 @@ fun CenteredDateTimeDisplay(label: String, value: String, onChangeClick: () -> U
     }
 }
 
-// 🎨 Consistent button styling
 @Composable
 fun StyledActionButton(label: String, color: Color, onClick: () -> Unit) {
     Button(

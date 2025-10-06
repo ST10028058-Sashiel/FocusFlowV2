@@ -55,17 +55,17 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.3")
     implementation(libs.androidx.compose.navigation)
     implementation(libs.androidx.compose.runtime.livedata)
-    // ✅ Material icons extended for Save, Edit, Delete, etc.
     implementation("androidx.compose.material:material-icons-extended")
 
-
     // -------------------------------
-    // 🔥 Firebase
+    // 🔥 Firebase (no version tags here)
     // -------------------------------
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-messaging-ktx")
+
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
@@ -77,13 +77,15 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation(libs.androidx.compose.foundation)
-    implementation(libs.firebase.auth)
+
+    // Authentication
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.androidx.lifecycle.process)
 
     // -------------------------------
-    // 💾 Room (local DB for tasks)
+    // 💾 Room (local DB)
     // -------------------------------
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
@@ -91,12 +93,12 @@ dependencies {
     kapt("androidx.room:room-compiler:$roomVersion")
 
     // -------------------------------
-    // ⏰ WorkManager (for reminders / background tasks)
+    // ⏰ WorkManager
     // -------------------------------
     implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     // -------------------------------
-    // 🗄️ DataStore (preferences)
+    // 🗄️ DataStore
     // -------------------------------
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
