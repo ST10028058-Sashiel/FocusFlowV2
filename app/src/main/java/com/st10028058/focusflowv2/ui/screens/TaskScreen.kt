@@ -82,7 +82,7 @@ fun TaskScreen(
         if (userId != null) viewModel.fetchTasks()
     }
 
-    // Theme-aware purple header gradient
+    // Theme-aware header gradient
     val backdrop = if (colors.surface.luminance() < 0.5f) {
         Brush.verticalGradient(listOf(colors.primary.copy(alpha = 0.95f), colors.surfaceVariant))
     } else {
@@ -227,6 +227,26 @@ fun FancyTaskCard(
     val overlayAlpha = if (isDark) 0.24f else 0.10f
     val isCompleted = task.completed == true
 
+    // ⬇️ Brought back from your old code: confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this task?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete()
+                    }
+                ) { Text("Delete", color = Color.Red, fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
     Card(
         shape = RoundedCornerShape(18.dp),
         modifier = Modifier
@@ -242,7 +262,6 @@ fun FancyTaskCard(
                     .background(priorityTint)
             )
 
-            // 🔁 Change meta text color to black in light mode, white in dark
             val metaColor = if (isDark) Color.White else Color(0xFF111111)
 
             Column(
@@ -256,7 +275,6 @@ fun FancyTaskCard(
                     .alpha(if (isCompleted) 0.75f else 1f)
                     .weight(1f)
             ) {
-                // Title stays bold; use black in light mode, white in dark
                 Text(
                     text = task.title,
                     color = if (isDark) Color.White else Color(0xFF111111),
@@ -278,7 +296,7 @@ fun FancyTaskCard(
                     Text(
                         text = "🕒 $start → $end",
                         color = metaColor,
-                        fontWeight = FontWeight.Bold   // ⬅️ bold in light mode now
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
@@ -286,7 +304,7 @@ fun FancyTaskCard(
                     Text(
                         text = "🔔 Reminder: ${task.reminderOffsetMinutes} mins before",
                         color = metaColor,
-                        fontWeight = FontWeight.Bold   // ⬅️ bold
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
@@ -294,7 +312,7 @@ fun FancyTaskCard(
                     Text(
                         text = "📍 Location: ${task.location}",
                         color = metaColor,
-                        fontWeight = FontWeight.Bold   // ⬅️ bold
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
@@ -304,7 +322,7 @@ fun FancyTaskCard(
                     IconButton(onClick = onEdit) {
                         Icon(Icons.Filled.Edit, contentDescription = "Edit", tint = colors.primary)
                     }
-                    IconButton(onClick = { showDeleteDialog = true }) {
+                    IconButton(onClick = { showDeleteDialog = true }) { // opens dialog
                         Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = colors.error)
                     }
                 }
@@ -375,7 +393,7 @@ fun SortDropdown(
     }
 }
 
-/* -------------------- Stats (white card, black labels, colored numbers) -------------------- */
+/* -------------------- Stats -------------------- */
 
 @Composable
 fun TaskStatsBar(tasks: List<Task>) {
@@ -384,10 +402,10 @@ fun TaskStatsBar(tasks: List<Task>) {
     val normal = tasks.count { it.priority.equals("Normal", true) }
     val low = tasks.count { it.priority.equals("Low", true) }
 
-    val labelColor = Color(0xFF111111)      // black-ish label text
-    val highTone   = Color(0xFFFF4D4D)      // red
-    val normalTone = Color(0xFFFFB020)      // amber
-    val lowTone    = Color(0xFF2ECC71)      // green
+    val labelColor = Color(0xFF111111)
+    val highTone   = Color(0xFFFF4D4D)
+    val normalTone = Color(0xFFFFB020)
+    val lowTone    = Color(0xFF2ECC71)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
