@@ -1,39 +1,61 @@
-name: Android Unit Tests (Self-hosted)
+name: Manual Unit Tests
 
 on:
-  push:
-    branches: [ "**" ]
-  pull_request:
-    branches: [ "**" ]
   workflow_dispatch:
+    inputs:
+      runner:
+        description: "Where to run the job"
+        type: choice
+        options: [ubuntu-latest, self-hosted]
+        default: ubuntu-latest
+
+concurrency:
+  group: manual-tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  unit:
+  unit-tests:
     name: Run unit tests (JVM)
-    runs-on: [self-hosted]   # <— uses your machine, no billed minutes
+    runs-on: ${{ inputs.runner }}
     timeout-minutes: 30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # You can still use setup-java on self-hosted
+      # Only needed on GitHub-hosted runners; self-hosted can keep its own JDK
       - name: Set up JDK 17
+        if: ${{ inputs.runner != 'self-hosted' }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle
 
-      - name: Make Gradle executable (no-op on Windows)
+      - name: Set up Gradle caching
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make Gradle executable (non-Windows)
         if: runner.os != 'Windows'
         run: chmod +x ./gradlew
 
+      # 👉 Runs ONLY JVM unit tests under app/src/test (no emulator required)
       - name: Run unit tests
-        run: ./gradlew testDebugUnitTest --stacktrace --no-daemon
+        run: ./gradlew testDebugUnitTest --stacktrace --no-daemon --warning-mode all
 
-      - name: Upload test report
+      # Upload reports so you can inspect failures
+      - name: Upload unit test HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-report
           path: app/build/reports/tests/testDebugUnitTest
+
+      - name: Upload JUnit XML results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results-xml
+          path: |
+            **/build/test-results/testDebugUnitTest/*.xml
+            **/build/test-results/test/*.xml
