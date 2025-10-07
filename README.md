@@ -201,16 +201,19 @@ npm start
 
 ## 🏁 **Authors**
 
-👨‍💻 DeveloperS: 
-*Sashiel Moonsamy *(ST10028058)*
-* Nikhil Saroop *(ST10040092)*
-* Kiyashan Nadasen *(ST10203525)*
+🏁 Authors
+👨‍💻 Developers
+Name	Student ID	Role
+Sashiel Moonsamy	ST10028058	💡 Lead Developer / Frontend Engineer
+Nikhil Saroop	ST10040092	🧠 Backend Developer / API Integration
+Kiyashan Nadasen	ST10203525	⚙️ Database & QA Engineer
+🏫 Institution Details
 
-📘 **Module:** PROG7314
-🏫 **Institution:** The IIE Varsity College
-📅 **Year:** 2025
+Module: PROG7315 – Programming 3D
 
----
+Institution: The IIE Varsity College
+
+Year: 2025
 
 ## 🧾 **License**
 
