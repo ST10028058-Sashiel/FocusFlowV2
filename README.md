@@ -31,7 +31,7 @@ The POE demonstrates skills in **mobile app development**, **RESTful API integra
 
 ---
 
-## 💡 **Additional Student-Implemented Features**
+## 💡 ** PART 1 STATED  Student-Implemented Features**
 
 In addition to POE requirements, the following features were designed and developed by the team to improve functionality and engagement:
 
