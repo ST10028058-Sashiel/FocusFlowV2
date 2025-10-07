@@ -1,29 +1,20 @@
-// SettingsViewModel.kt
 package com.st10028058.focusflowv2.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import com.st10028058.focusflowv2.data.UserPreferences
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
-class SettingsViewModel(app: Application) : AndroidViewModel(app) {
-    private val prefs = UserPreferences(app)
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
-    val darkMode = prefs.darkMode.stateIn(viewModelScope, SharingStarted.Lazily, false)
-    val notificationsEnabled = prefs.notificationsEnabled.stateIn(viewModelScope, SharingStarted.Lazily, true)
-    val displayName = prefs.displayName.stateIn(viewModelScope, SharingStarted.Lazily, "")
+    private val prefs = application.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-    fun setDarkMode(enabled: Boolean) = viewModelScope.launch {
-        prefs.setDarkMode(enabled)
-    }
+    private val _darkMode = MutableStateFlow(prefs.getBoolean("darkMode", false))
+    val darkMode: StateFlow<Boolean> = _darkMode
 
-    fun setNotifications(enabled: Boolean) = viewModelScope.launch {
-        prefs.setNotifications(enabled)
-    }
-
-    fun setDisplayName(name: String) = viewModelScope.launch {
-        prefs.setDisplayName(name)
+    fun toggleDarkMode(enabled: Boolean) {
+        _darkMode.value = enabled
+        prefs.edit().putBoolean("darkMode", enabled).apply()
     }
 }

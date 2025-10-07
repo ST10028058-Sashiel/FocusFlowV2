@@ -21,13 +21,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ✅ Register launcher to request POST_NOTIFICATIONS permission
+        // 🔔 Request POST_NOTIFICATIONS permission on Android 13+
         val requestPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                // You can handle permission granted/denied here if needed
+                // Optional: Handle permission result
             }
 
-        // ✅ Ask for POST_NOTIFICATIONS on Android 13+ (Tiramisu / API 33)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -44,7 +43,12 @@ class MainActivity : ComponentActivity() {
 
             FocusFlowV2Theme(darkTheme = isDarkMode) {
                 val navController = rememberNavController()
-                AppNavigation(navController = navController)
+
+                // 🔄 Pass settingsViewModel to AppNavigation if needed
+                AppNavigation(
+                    navController = navController,
+                    settingsViewModel = settingsViewModel
+                )
             }
         }
     }

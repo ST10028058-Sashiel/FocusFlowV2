@@ -14,6 +14,7 @@ class TaskViewModel : ViewModel() {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> get() = _tasks
 
+    // 🔄 Fetch all tasks
     fun fetchTasks() {
         viewModelScope.launch {
             val res = repository.getTasks()
@@ -21,6 +22,7 @@ class TaskViewModel : ViewModel() {
         }
     }
 
+    // ➕ Add new task
     fun addTask(task: Task) {
         viewModelScope.launch {
             repository.addTask(task)
@@ -28,6 +30,7 @@ class TaskViewModel : ViewModel() {
         }
     }
 
+    // ➕ Add task and return created instance
     suspend fun addTaskAndReturn(task: Task): Task? {
         val res = repository.addTask(task)
         if (res.isSuccessful) {
@@ -37,6 +40,7 @@ class TaskViewModel : ViewModel() {
         return null
     }
 
+    // ✏️ Update task
     fun updateTask(id: String, task: Task) {
         viewModelScope.launch {
             val res = repository.updateTask(id, task)
@@ -44,10 +48,24 @@ class TaskViewModel : ViewModel() {
         }
     }
 
+    // ❌ Delete task
     fun deleteTask(id: String) {
         viewModelScope.launch {
             val res = repository.deleteTask(id)
             if (res.isSuccessful) fetchTasks()
+        }
+    }
+
+    // ✅ Toggle completion (for TaskStatusScreen)
+    fun toggleCompletion(task: Task) {
+        viewModelScope.launch {
+            val updatedTask = task.copy(completed = !(task.completed ?: false))
+            if (task._id != null) {
+                val res = repository.updateTask(task._id, updatedTask)
+                if (res.isSuccessful) {
+                    fetchTasks() // Refresh list
+                }
+            }
         }
     }
 }

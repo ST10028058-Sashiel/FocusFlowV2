@@ -40,7 +40,6 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
-    // ✅ Google Sign-In setup
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken(context.getString(R.string.default_web_client_id))
         .requestEmail()
@@ -69,7 +68,6 @@ fun LoginScreen(navController: NavController) {
         }
     }
 
-    // 🌈 Background gradient
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -86,9 +84,8 @@ fun LoginScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // ✅ App Logo
             Image(
-                painter = painterResource(id = R.drawable.focusflow_logo), // replace with your uploaded logo
+                painter = painterResource(id = R.drawable.focusflow_logo),
                 contentDescription = "FocusFlow Logo",
                 modifier = Modifier
                     .size(100.dp)
@@ -111,7 +108,6 @@ fun LoginScreen(navController: NavController) {
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // 🌟 Card container for fields
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -184,7 +180,7 @@ fun LoginScreen(navController: NavController) {
 
                     Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFB080E0))
 
-                    // ✅ Google Sign-In Button
+                    // ✅ Google Sign-In Button (Color Updated)
                     Button(
                         onClick = {
                             val signInIntent = googleSignInClient.signInIntent
@@ -194,7 +190,7 @@ fun LoginScreen(navController: NavController) {
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4))
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A0DAD)) // 💜 Updated Color
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_google),
