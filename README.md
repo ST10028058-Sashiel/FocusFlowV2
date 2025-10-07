@@ -27,8 +27,7 @@ The POE demonstrates skills in **mobile app development**, **API integration**, 
 | **POE Requirement**    | **Implementation**                                                                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **SSO Authentication** | Integrated **Google Sign-In (OAuth 2.0)** via **Firebase** for secure and seamless login.                                                                     |
-| **Settings Feature**   | Added a **Dark Mode / Light Mode Toggle** to enhance usability and accessibility.                                                                             |
-| **Account Management** | Created a **Delete Account** button that removes user credentials and associated task data permanently from both **Firebase Authentication** and **MongoDB**. |
+| **Settings Feature**   | Added a **Dark Mode / Light Mode Toggle  + **Delete Account** button that removes user credentials and associated task data permanently from both **Firebase Authentication** and **MongoDB**** to enhance usability and accessibility.                                                                             |
 
 ---
 
