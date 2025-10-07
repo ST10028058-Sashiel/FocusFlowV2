@@ -201,7 +201,8 @@ npm start
 
 ## 🏁 **Authors**
 
-👨‍💻 ** DeveloperS:** Sashiel Moonsamy *(ST10028058)*
+👨‍💻 ** DeveloperS:** 
+*Sashiel Moonsamy *(ST10028058)*
 * Nikhil Saroop *(ST10040092)*
 * Kiyashan Nadasen *(ST10203525)*
 
