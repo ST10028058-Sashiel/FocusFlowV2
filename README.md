@@ -201,9 +201,7 @@ npm start
 
 ## 🏁 **Authors**
 
-👨‍💻 **Lead Developer:** Sashiel Moonsamy *(ST10028058)*
-👨‍💻 **Team Members:**
-
+👨‍💻 ** DeveloperS:** Sashiel Moonsamy *(ST10028058)*
 * Nikhil Saroop *(ST10040092)*
 * Kiyashan Nadasen *(ST10203525)*
 
