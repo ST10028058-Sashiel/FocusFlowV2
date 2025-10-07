@@ -105,7 +105,7 @@ Data syncs between **RoomDB (local storage)** and **MongoDB (cloud)** via RESTfu
 
 ### ⚙️ **Backend API**
 
-👉 [API Repository – focusflow-api](https://github.com/MoltenBog4/focusflow-api.git)
+
 👉 [Hosted API – Render](https://focusflow-api-ts06.onrender.com)
 
 ---
@@ -133,8 +133,7 @@ https://focusflow-api-ts06.onrender.com
 ## 🎥 **YouTube Demonstration**
 
 📺 **FocusFlowV2 – Final POE Demo Video**
-🔗 [YouTube Link – Coming Soon](#)
-
+https://youtu.be/Jz4rFbhzQGI?si=PkdkIOF2if381a1z
 ---
 
 ## 📦 **Installation & Setup**
@@ -223,4 +222,3 @@ You may modify, distribute, and reuse it with proper attribution.
 ---
 
 ### ✨ *“Plan better. Focus deeper. Achieve more — with FocusFlowV2.”*
-
