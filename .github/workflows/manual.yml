@@ -2,12 +2,11 @@ name: Android Unit Tests
 
 on:
   push:
-    branches: [ front-end-update ]
+    branches: [ "**" ]
   pull_request:
-    branches: [ front-end-update ]
+    branches: [ "**" ]
   workflow_dispatch:
 
-# Avoid running multiple concurrent jobs on the same ref
 concurrency:
   group: unit-tests-${{ github.ref }}
   cancel-in-progress: true
@@ -38,11 +37,9 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      # 👉 Runs ONLY JVM unit tests under src/test (no emulator)
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest --stacktrace --no-daemon --warning-mode all
 
-      # Always upload HTML reports + JUnit XML so you can inspect failures
       - name: Upload unit test HTML report
         if: always()
         uses: actions/upload-artifact@v4
