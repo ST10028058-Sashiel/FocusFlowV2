@@ -84,6 +84,7 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.junit.ktx)
 
     // -------------------------------
     // 💾 Room (local DB)
@@ -113,4 +114,10 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    // Unit testing
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation(kotlin("test"))
+
 }
