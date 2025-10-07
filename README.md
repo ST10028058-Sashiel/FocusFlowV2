@@ -19,15 +19,15 @@ This repository contains the **Android frontend**, while the API backend is host
 
 ## 🎯 **Portfolio of Evidence (POE) Context**
 
-This project was developed as part of the **PROG7315 (Programming 3D)** Portfolio of Evidence (POE).
-The POE demonstrates skills in **mobile app development**, **API integration**, and **cloud-based database management**.
+This project was developed as part of the **PROG7314** Portfolio of Evidence (POE).
+The POE demonstrates skills in **mobile app development**, **RESTful API integration**, and **cloud-based database management**.
 
 ### 🔍 **POE Requirements & Implementations**
 
 | **POE Requirement**    | **Implementation**                                                                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **SSO Authentication** | Integrated **Google Sign-In (OAuth 2.0)** via **Firebase** for secure and seamless login.                                                                     |
-| **Settings Feature**   | Added a **Dark Mode / Light Mode Toggle  + **Delete Account** button that removes user credentials and associated task data permanently from both **Firebase Authentication** and **MongoDB**** to enhance usability and accessibility.                                                                             |
+| **Settings Feature**   | Added a 1. **Dark Mode / Light Mode Toggle  + 2. **Delete Account** button that removes user credentials and associated task data permanently from both **Firebase Authentication** and **MongoDB**** to enhance usability and accessibility + 3.Export CSV file through email containing all the tasks in an excel file.                                                                             |
 
 ---
 
