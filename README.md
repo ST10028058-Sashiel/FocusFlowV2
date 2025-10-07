@@ -204,9 +204,9 @@ npm start
 🏁 Authors
 👨‍💻 Developers
 Name	Student ID	Role
-Sashiel Moonsamy	ST10028058	💡 Lead Developer / Frontend Engineer
-Nikhil Saroop	ST10040092	🧠 Backend Developer / API Integration
-Kiyashan Nadasen	ST10203525	⚙️ Database & QA Engineer
+Sashiel Moonsamy	ST10028058	
+Nikhil Saroop	ST10040092	
+Kiyashan Nadasen	ST10203525	
 🏫 Institution Details
 
 Module: PROG7315 – Programming 3D
