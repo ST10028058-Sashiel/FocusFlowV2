@@ -4,17 +4,17 @@ import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.st10028058.focusflowv2.data.Task
 import com.st10028058.focusflowv2.ui.nav.Routes
 import com.st10028058.focusflowv2.viewmodel.TaskViewModel
 
@@ -26,7 +26,9 @@ fun UpdateTaskScreen(
     navController: NavController,
     viewModel: TaskViewModel = viewModel()
 ) {
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+
     val tasks by viewModel.tasks.collectAsState()
     val task = tasks.find { it._id == taskId }
 
@@ -38,19 +40,50 @@ fun UpdateTaskScreen(
 
     if (task == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Task not found", color = Color.White)
+            Text("Task not found", color = colors.onBackground)
         }
         return
     }
+
+    // High-contrast, theme-aware colors for all fields
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = colors.surface,
+        unfocusedContainerColor = colors.surface,
+        disabledContainerColor = colors.surface,
+        focusedTextColor = colors.onSurface,
+        unfocusedTextColor = colors.onSurface,
+        disabledTextColor = colors.onSurface,
+        focusedBorderColor = colors.primary,
+        unfocusedBorderColor = colors.outline,
+        disabledBorderColor = colors.outline,
+        focusedLabelColor = colors.onSurface,
+        unfocusedLabelColor = colors.onSurfaceVariant,
+        cursorColor = colors.primary,
+        focusedPlaceholderColor = colors.onSurfaceVariant,
+        unfocusedPlaceholderColor = colors.onSurfaceVariant
+    )
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Edit Task", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF6A0DAD), titleContentColor = Color.White)
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colors.primary,
+                    titleContentColor = colors.onPrimary,
+                    navigationIconContentColor = colors.onPrimary,
+                    actionIconContentColor = colors.onPrimary
+                )
             )
         },
-        containerColor = Color(0xFFF5F5F5)
+        containerColor = colors.background
     ) { padding ->
 
         Column(
@@ -64,14 +97,16 @@ fun UpdateTaskScreen(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Title") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = fieldColors
             )
 
             OutlinedTextField(
                 value = location,
                 onValueChange = { location = it },
                 label = { Text("Location") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = fieldColors
             )
 
             // Priority Dropdown
@@ -81,7 +116,7 @@ fun UpdateTaskScreen(
                     onClick = { expanded = true },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF6A0DAD))
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.primary)
                 ) {
                     Text("Priority: $priority")
                 }
@@ -103,18 +138,22 @@ fun UpdateTaskScreen(
                 onValueChange = { reminder = it },
                 label = { Text("Reminder (minutes before)") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                colors = fieldColors
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = completed,
                     onCheckedChange = { completed = it },
-                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF4CAF50))
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = colors.primary,
+                        uncheckedColor = colors.outline
+                    )
                 )
                 Text(
                     text = if (completed) "Completed" else "Mark as Completed",
-                    color = if (completed) Color(0xFF4CAF50) else Color.DarkGray
+                    color = if (completed) colors.primary else colors.onSurfaceVariant
                 )
             }
 
@@ -130,7 +169,6 @@ fun UpdateTaskScreen(
                         completed = completed
                     )
 
-                    // ✅ FIXED: correct call
                     viewModel.updateTask(taskId, updatedTask)
 
                     Toast.makeText(context, "Task updated successfully", Toast.LENGTH_SHORT).show()
@@ -142,9 +180,13 @@ fun UpdateTaskScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A0DAD))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colors.primary,
+                    contentColor = colors.onPrimary
+                ),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Save Changes", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Save Changes", fontWeight = FontWeight.Bold)
             }
         }
     }

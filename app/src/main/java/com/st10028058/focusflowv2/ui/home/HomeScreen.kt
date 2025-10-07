@@ -1,191 +1,237 @@
 package com.st10028058.focusflowv2.ui.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.st10028058.focusflowv2.R
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
+    val colors = MaterialTheme.colorScheme
+
+    val hero = if (colors.surface.luminance() < 0.5f) {
+        Brush.verticalGradient(listOf(colors.primary.copy(alpha = 0.98f), colors.primary.copy(alpha = 0.75f)))
+    } else {
+        Brush.verticalGradient(listOf(colors.primary, colors.primary.copy(alpha = 0.80f)))
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    listOf(Color(0xFF6A0DAD), Color(0xFF8B2BE2))
-                )
-            )
-            .padding(16.dp)
+            .background(hero)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+                .padding(top = 24.dp, bottom = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 👋 Greeting
             Text(
-                text = "Hi there 👋",
+                text = "FocusFlow",
                 color = Color.White,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 30.dp)
+                fontSize = 30.sp,
+                fontWeight = FontWeight.ExtraBold
             )
+            Text(
+                text = "Stay organized, focused, and in control.",
+                color = Color.White.copy(alpha = 0.90f),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
+            )
+
+            GlanceRow()
+
+            Spacer(Modifier.height(16.dp))
+            AboutCard()
+            Spacer(Modifier.height(14.dp))
+            MotivationCard()
+            Spacer(Modifier.height(10.dp))
+            TipsCard()
+
+            Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = "Here’s your day at a glance!",
-                color = Color(0xFFE0C3FC),
-                fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 20.dp)
+                text = "Made with ♥ by FocusFlow",
+                color = Color.White.copy(alpha = 0.8f),
+                style = MaterialTheme.typography.bodySmall
             )
+        }
+    }
+}
 
-            // 🏅 Badge Card
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(10.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(20.dp)
-                ) {
-                    Text(
-                        "Badge Earned This Week",
-                        color = Color(0xFF6A0DAD),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
+/* ---------- Sections ---------- */
 
-                    Spacer(modifier = Modifier.height(8.dp))
+@Composable
+private fun GlanceRow() {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // ✅ Pass weight from the Row (RowScope) to each pill
+        StatPill(
+            label = "Upcoming",
+            value = "Today",
+            icon = Icons.Default.Schedule,
+            container = colors.surface.copy(alpha = 0.9f),
+            content = colors.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+        StatPill(
+            label = "In Progress",
+            value = "Keep it up",
+            icon = Icons.Default.Lightbulb,
+            container = colors.surface.copy(alpha = 0.9f),
+            content = colors.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+        StatPill(
+            label = "Completed",
+            value = "Nice!",
+            icon = Icons.Default.CheckCircle,
+            container = colors.surface.copy(alpha = 0.9f),
+            content = colors.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
 
-                    Image(
-                        painter = painterResource(id = R.drawable.focusflow_logo),
-                        contentDescription = "Badge",
-                        modifier = Modifier.size(60.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    LinearProgressIndicator(
-                        progress = 0.6f,
-                        color = Color(0xFF6A0DAD),
-                        trackColor = Color(0xFFE0C3FC),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(10.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        "300 points earned so far!",
-                        color = Color.DarkGray,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Button(
-                        onClick = { /* Navigate to next task */ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63)),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Next Task", color = Color.White)
-                    }
-                }
+@Composable
+private fun StatPill(
+    label: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    container: Color,
+    content: Color,
+    modifier: Modifier = Modifier // ✅ accept modifier from caller
+) {
+    Surface(
+        color = container,
+        contentColor = content,
+        shape = RoundedCornerShape(16.dp),
+        tonalElevation = 2.dp,
+        modifier = modifier // ✅ use the RowScope.weight passed in
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
+        ) {
+            Surface(color = content.copy(alpha = 0.10f), shape = CircleShape) {
+                Icon(icon, contentDescription = null, tint = content, modifier = Modifier.padding(6.dp))
             }
-
-            // 📅 Task Summary Section
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(10.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp)
-                ) {
-                    Text(
-                        "Tasks Today",
-                        color = Color(0xFF6A0DAD),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    TaskIndicator("Urgent", 5, Color.Red)
-                    TaskIndicator("Needs to be done", 2, Color(0xFFFFC107))
-                    TaskIndicator("Can be rescheduled", 1, Color(0xFF4CAF50))
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Button(
-                        onClick = { /* Navigate to tasks */ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A0DAD)),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    ) {
-                        Text("View Tasks", color = Color.White)
-                    }
-                }
-            }
-
-            // 💪 Motivation Section
-            Spacer(modifier = Modifier.height(16.dp))
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(
-                    painter = painterResource(id = R.drawable.progress_icon),
-                    contentDescription = "Motivation Icon",
-                    modifier = Modifier.size(100.dp)
-                )
-                Text(
-                    "Keep going and stay focused!",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 10.dp)
-                )
+            Spacer(Modifier.width(8.dp))
+            Column(horizontalAlignment = Alignment.Start) {
+                Text(label, style = MaterialTheme.typography.labelSmall, color = content.copy(alpha = 0.8f))
+                Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
             }
         }
     }
 }
 
-// ✅ Reusable Task Indicator component
 @Composable
-fun TaskIndicator(label: String, count: Int, color: Color) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+private fun AboutCard() {
+    val colors = MaterialTheme.colorScheme
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Box(
-            modifier = Modifier
-                .size(16.dp)
-                .background(color, shape = RoundedCornerShape(50))
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text("$label - $count tasks", color = Color.DarkGray, fontSize = 14.sp)
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Info, contentDescription = null, tint = colors.primary)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "About FocusFlow",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = colors.onSurface
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "FocusFlow helps you plan your day, track progress, and keep momentum. Create tasks, set reminders, and see what needs your attention at a glance.",
+                color = colors.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun MotivationCard() {
+    val colors = MaterialTheme.colorScheme
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                "Motivation",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = colors.onSurface
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = "“Small progress each day adds up to big results.”",
+                color = colors.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun TipsCard() {
+    val colors = MaterialTheme.colorScheme
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                "Pro Tips",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = colors.onSurface
+            )
+            Spacer(Modifier.height(8.dp))
+            TipRow("Use reminders for time-sensitive tasks.")
+            TipRow("Group tasks by priority to focus better.")
+            TipRow("Review your status in the Updates tab.")
+        }
+    }
+}
+
+@Composable
+private fun TipRow(text: String) {
+    val colors = MaterialTheme.colorScheme
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+        Surface(color = colors.primary.copy(alpha = 0.12f), shape = CircleShape) {
+            Icon(Icons.Default.Lightbulb, null, tint = colors.primary, modifier = Modifier.padding(6.dp))
+        }
+        Spacer(Modifier.width(10.dp))
+        Text(text, color = colors.onSurfaceVariant)
     }
 }

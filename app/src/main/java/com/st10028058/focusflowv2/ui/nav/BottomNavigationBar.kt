@@ -20,44 +20,20 @@ fun BottomNavigationBar(
         BottomNavItem.Settings
     )
 
-    // Observe current navigation destination
+    // current destination
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // 🧠 Get outstanding task count for badge
+    // outstanding tasks for badge
     val tasks by viewModel.tasks.collectAsState()
     val outstandingCount = tasks.count { it.completed != true }
 
+    // keep bar light in both themes
     NavigationBar(containerColor = Color.White) {
         items.forEach { item ->
             val selected = currentRoute == item.route
 
             NavigationBarItem(
-                icon = {
-                    if (item is BottomNavItem.Updates && outstandingCount > 0) {
-                        // 🔔 Show badge for Updates tab
-                        BadgedBox(
-                            badge = {
-                                Badge(
-                                    containerColor = Color(0xFFE91E63), // Pink badge
-                                    contentColor = Color.White
-                                ) {
-                                    Text(outstandingCount.toString())
-                                }
-                            }
-                        ) {
-                            Icon(item.icon, contentDescription = item.label, tint = Color.Black)
-                        }
-                    } else {
-                        Icon(item.icon, contentDescription = item.label, tint = Color.Black)
-                    }
-                },
-                label = {
-                    Text(
-                        item.label,
-                        color = if (selected) Color(0xFFE91E63) else Color.Black
-                    )
-                },
                 selected = selected,
                 onClick = {
                     if (currentRoute != item.route) {
@@ -67,7 +43,43 @@ fun BottomNavigationBar(
                             restoreState = true
                         }
                     }
-                }
+                },
+                icon = {
+                    val iconComposable: @Composable () -> Unit = {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.label,
+                            tint = Color.Black // readable on white
+                        )
+                    }
+
+                    if (item is BottomNavItem.Updates && outstandingCount > 0) {
+                        BadgedBox(
+                            badge = {
+                                Badge(
+                                    containerColor = Color(0xFFE91E63), // pink badge
+                                    contentColor = Color.White
+                                ) { Text(outstandingCount.toString()) }
+                            }
+                        ) { iconComposable() }
+                    } else {
+                        iconComposable()
+                    }
+                },
+                label = {
+                    Text(
+                        text = item.label,
+                        color = if (selected) Color(0xFFE91E63) else Color.Black // pink when selected
+                    )
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.Black,
+                    selectedTextColor = Color(0xFFE91E63),
+                    unselectedIconColor = Color.Black,
+                    unselectedTextColor = Color.Black,
+                    // purple translucent pill so it never appears black in dark mode
+                    indicatorColor = Color(0xFF6A0DAD).copy(alpha = 0.18f)
+                )
             )
         }
     }

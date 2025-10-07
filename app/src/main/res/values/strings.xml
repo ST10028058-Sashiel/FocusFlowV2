@@ -1,7 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- App Information -->
     <string name="app_name">FocusFlowV2</string>
 
-    <string name="default_web_client_id">
-        906573757921-kcv3rovpjacjalrun5v8tlrh3ms27jal.apps.googleusercontent.com
-    </string>
+    <!-- Google Sign-In -->
+    <string name="default_web_client_id">906573757921-kcv3rovpjacjalrun5v8tlrh3ms27jal.apps.googleusercontent.com</string>
+
+    <!-- Optional: Splash & UI Labels -->
+    <string name="splash_title">Welcome to FocusFlow</string>
+    <string name="splash_subtitle">Stay organized. Stay focused.</string>
+    <string name="login_button">Sign In</string>
+    <string name="register_button">Create Account</string>
+    <string name="logout_button">Log Out</string>
+    <string name="settings_title">Settings</string>
+
 </resources>

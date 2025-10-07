@@ -17,7 +17,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,8 +49,10 @@ fun SettingsScreen(
     val darkModeEnabled by settingsViewModel.darkMode.collectAsState()
     var notificationsEnabled by remember { mutableStateOf(true) }
 
+    val colors = MaterialTheme.colorScheme
+
     Scaffold(
-        containerColor = Color(0xFFF9F6FF)
+        containerColor = colors.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -61,29 +62,33 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+
             // 👤 Profile Header
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = "Profile",
-                    tint = Color(0xFF6A0DAD),
+                    tint = colors.primary,
                     modifier = Modifier.size(90.dp)
                 )
                 Text(
                     text = user?.displayName ?: "FocusFlow User",
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleLarge,
-                    color = Color.Black
+                    color = colors.onBackground
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(Icons.Default.Email, contentDescription = null, tint = Color(0xFF6A0DAD))
+                    Icon(Icons.Default.Email, contentDescription = null, tint = colors.primary)
                     Spacer(Modifier.width(4.dp))
                     Text(
                         text = user?.email ?: "No email",
-                        color = Color.Gray,
+                        color = colors.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -95,9 +100,7 @@ fun SettingsScreen(
                     icon = Icons.Default.DarkMode,
                     title = "Dark Mode",
                     checked = darkModeEnabled,
-                    onCheckedChange = {
-                        settingsViewModel.toggleDarkMode(it)
-                    }
+                    onCheckedChange = { settingsViewModel.toggleDarkMode(it) }
                 )
                 SettingRow(
                     icon = Icons.Default.Notifications,
@@ -122,9 +125,9 @@ fun SettingsScreen(
                         }
                     }
                 }) {
-                    Icon(Icons.Default.Download, contentDescription = null, tint = Color(0xFF6A0DAD))
+                    Icon(Icons.Default.Download, contentDescription = null, tint = colors.primary)
                     Spacer(Modifier.width(8.dp))
-                    Text("Export & Share Tasks", color = Color(0xFF6A0DAD))
+                    Text("Export & Share Tasks", color = colors.primary)
                 }
             }
 
@@ -136,9 +139,9 @@ fun SettingsScreen(
                         Toast.makeText(context, "Password reset email sent to $it", Toast.LENGTH_SHORT).show()
                     }
                 }) {
-                    Icon(Icons.Default.Key, contentDescription = null, tint = Color(0xFF6A0DAD))
+                    Icon(Icons.Default.Key, contentDescription = null, tint = colors.primary)
                     Spacer(Modifier.width(8.dp))
-                    Text("Change Password", color = Color(0xFF6A0DAD))
+                    Text("Change Password", color = colors.primary)
                 }
 
                 TextButton(onClick = {
@@ -153,21 +156,20 @@ fun SettingsScreen(
                         }
                     }
                 }) {
-                    Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
+                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                     Spacer(Modifier.width(8.dp))
-                    Text("Delete Account", color = Color.Red)
+                    Text("Delete Account", color = MaterialTheme.colorScheme.error)
                 }
 
-                // 🚪 Logout inside Account Settings
                 TextButton(onClick = {
                     auth.signOut()
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Login) { inclusive = true }
                     }
                 }) {
-                    Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout", tint = Color(0xFFE91E63))
+                    Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout", tint = colors.secondary)
                     Spacer(Modifier.width(8.dp))
-                    Text("Logout", color = Color(0xFFE91E63))
+                    Text("Logout", color = colors.secondary)
                 }
             }
         }
@@ -177,16 +179,17 @@ fun SettingsScreen(
 // 🧱 Reusable Components
 @Composable
 fun SettingsCard(title: String, content: @Composable ColumnScope.() -> Unit) {
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(16.dp))
+            .background(colors.surface, RoundedCornerShape(16.dp))
             .padding(16.dp)
     ) {
         Text(
             text = title,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF6A0DAD),
+            color = colors.primary,
             modifier = Modifier.padding(bottom = 12.dp)
         )
         content()
@@ -200,6 +203,7 @@ fun SettingRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -208,19 +212,24 @@ fun SettingRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, tint = Color(0xFF6A0DAD))
+            Icon(icon, contentDescription = null, tint = colors.primary)
             Spacer(Modifier.width(8.dp))
-            Text(title, color = Color.Black)
+            Text(title, color = colors.onSurface)
         }
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFF6A0DAD))
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = colors.primary,
+                checkedTrackColor = colors.primary.copy(alpha = 0.54f),
+                uncheckedThumbColor = colors.outline,
+                uncheckedTrackColor = colors.surfaceVariant
+            )
         )
     }
 }
 
-// 🧾 Export Tasks to CSV
+// 🧾 Export Tasks to CSV (unchanged)
 fun exportTasksToCSV(context: Context, taskViewModel: TaskViewModel): File? {
     return try {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())

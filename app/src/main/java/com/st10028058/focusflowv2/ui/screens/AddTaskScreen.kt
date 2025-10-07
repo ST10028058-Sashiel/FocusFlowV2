@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -59,15 +61,48 @@ fun AddTaskScreen(
     var location by remember { mutableStateOf("") }
 
     val scrollState = rememberScrollState()
+    val colors = MaterialTheme.colorScheme
+
+    // Theme-aware gradient behind the screen header
+    val backdrop = Brush.verticalGradient(
+        if (colors.surface.luminance() < 0.5f)
+            listOf(colors.primary.copy(alpha = 0.95f), colors.surfaceVariant)
+        else
+            listOf(colors.primary, colors.primary.copy(alpha = 0.75f))
+    )
+
+    // Consistent, high-contrast field colors for both themes
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = colors.surface,
+        unfocusedContainerColor = colors.surface,
+        disabledContainerColor = colors.surface.copy(alpha = 0.75f),
+
+        focusedTextColor = colors.onSurface,
+        unfocusedTextColor = colors.onSurface,
+        disabledTextColor = colors.onSurface.copy(alpha = 0.6f),
+
+        focusedBorderColor = colors.primary,
+        unfocusedBorderColor = colors.outline,
+        disabledBorderColor = colors.outline,
+
+        focusedLabelColor = colors.onSurfaceVariant,
+        unfocusedLabelColor = colors.onSurfaceVariant,
+        disabledLabelColor = colors.onSurfaceVariant.copy(alpha = 0.6f),
+
+        cursorColor = colors.primary,
+        selectionColors = TextSelectionColors(
+            handleColor = colors.primary,
+            backgroundColor = colors.primary.copy(alpha = 0.25f)
+        ),
+
+        focusedPlaceholderColor = colors.onSurfaceVariant,
+        unfocusedPlaceholderColor = colors.onSurfaceVariant
+    )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFF6A0DAD), Color(0xFF8B2BE2))
-                )
-            )
+            .background(backdrop)
     ) {
         Scaffold(
             containerColor = Color.Transparent,
@@ -109,14 +144,15 @@ fun AddTaskScreen(
                             }
                         }
                     },
-                    containerColor = Color(0xFFE91E63),
+                    containerColor = colors.secondary,
+                    contentColor = colors.onSecondary,
                     shape = RoundedCornerShape(20.dp),
                     modifier = Modifier
                         .padding(8.dp)
                         .size(60.dp)
                         .shadow(10.dp, RoundedCornerShape(20.dp))
                 ) {
-                    Icon(Icons.Filled.Save, contentDescription = "Save", tint = Color.White)
+                    Icon(Icons.Filled.Save, contentDescription = "Save")
                 }
             }
         ) { innerPadding ->
@@ -153,15 +189,19 @@ fun AddTaskScreen(
 
                 Text(
                     text = "Stay organized and productive 💪",
-                    color = Color(0xFFE0C3FC),
+                    color = Color.White.copy(alpha = 0.9f),
                     fontSize = 16.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                // Form card – uses theme surface/onSurface for contrast
                 Card(
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(
+                        containerColor = colors.surface,
+                        contentColor = colors.onSurface
+                    ),
                     elevation = CardDefaults.cardElevation(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -179,7 +219,8 @@ fun AddTaskScreen(
                             onValueChange = { title = it },
                             label = { Text("Task Title") },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            colors = fieldColors
                         )
 
                         var expanded by remember { mutableStateOf(false) }
@@ -189,7 +230,8 @@ fun AddTaskScreen(
                                 onValueChange = {},
                                 readOnly = true,
                                 label = { Text("Priority") },
-                                modifier = Modifier.menuAnchor().fillMaxWidth()
+                                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                                colors = fieldColors
                             )
                             ExposedDropdownMenu(
                                 expanded = expanded,
@@ -218,7 +260,8 @@ fun AddTaskScreen(
                                 onValueChange = {},
                                 readOnly = true,
                                 label = { Text("Reminder Time") },
-                                modifier = Modifier.menuAnchor().fillMaxWidth()
+                                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                                colors = fieldColors
                             )
                             ExposedDropdownMenu(
                                 expanded = expandedReminder,
@@ -237,14 +280,21 @@ fun AddTaskScreen(
                         }
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(checked = allDay, onCheckedChange = { allDay = it })
-                            Text("All Day Task", fontSize = 14.sp)
+                            Checkbox(
+                                checked = allDay,
+                                onCheckedChange = { allDay = it },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = colors.primary,
+                                    uncheckedColor = colors.outline
+                                )
+                            )
+                            Text("All Day Task", fontSize = 14.sp, color = colors.onSurface)
                         }
 
-                        Divider(color = Color(0xFFEEE7FF))
+                        Divider(color = colors.surfaceVariant)
 
                         if (selectedDate == null) {
-                            StyledActionButton("Select Date", Color(0xFF6A0DAD)) {
+                            StyledActionButton("Select Date", colors.primary) {
                                 val now = Calendar.getInstance()
                                 DatePickerDialog(
                                     context,
@@ -279,7 +329,7 @@ fun AddTaskScreen(
 
                         if (!allDay) {
                             if (startTime == null) {
-                                StyledActionButton("Select Start Time", Color(0xFF8B2BE2)) {
+                                StyledActionButton("Select Start Time", colors.primary) {
                                     TimePickerDialog(
                                         context,
                                         { _, hour, minute ->
@@ -313,7 +363,7 @@ fun AddTaskScreen(
                             }
 
                             if (endTime == null) {
-                                StyledActionButton("Select End Time", Color(0xFF8B2BE2)) {
+                                StyledActionButton("Select End Time", colors.primary) {
                                     TimePickerDialog(
                                         context,
                                         { _, hour, minute ->
@@ -347,14 +397,15 @@ fun AddTaskScreen(
                             }
                         }
 
-                        Divider(color = Color(0xFFEEE7FF))
+                        Divider(color = colors.surfaceVariant)
 
                         OutlinedTextField(
                             value = location,
                             onValueChange = { location = it },
                             label = { Text("Location (optional)") },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            colors = fieldColors
                         )
                     }
                 }
@@ -367,12 +418,16 @@ fun AddTaskScreen(
 
 @Composable
 fun CenteredDateTimeDisplay(label: String, value: String, onChangeClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F3FF)),
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surface,
+            contentColor = colors.onSurface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(
@@ -384,20 +439,23 @@ fun CenteredDateTimeDisplay(label: String, value: String, onChangeClick: () -> U
         ) {
             Text(
                 text = "$label $value",
-                color = Color(0xFF3A3A3A),
+                color = colors.onSurface,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(6.dp))
             Button(
                 onClick = onChangeClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63)),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colors.secondary,
+                    contentColor = colors.onSecondary
+                ),
                 shape = RoundedCornerShape(50.dp),
                 modifier = Modifier
                     .width(130.dp)
                     .height(38.dp)
             ) {
-                Text("Change", color = Color.White, fontWeight = FontWeight.Medium)
+                Text("Change", fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -408,11 +466,14 @@ fun StyledActionButton(label: String, color: Color, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = color),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = color,
+            contentColor = Color.White
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp)
     ) {
-        Text(label, color = Color.White, fontWeight = FontWeight.Medium)
+        Text(label, fontWeight = FontWeight.Medium)
     }
 }

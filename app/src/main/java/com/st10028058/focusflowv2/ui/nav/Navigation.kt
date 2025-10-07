@@ -2,8 +2,10 @@ package com.st10028058.focusflowv2.ui.nav
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -23,20 +25,26 @@ import com.st10028058.focusflowv2.viewmodel.TaskViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation(navController: NavHostController, settingsViewModel: SettingsViewModel) {
-    val navBackStackEntry = navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry.value?.destination?.route
+fun AppNavigation(
+    navController: NavHostController,
+    settingsViewModel: SettingsViewModel
+) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
     val taskViewModel: TaskViewModel = viewModel()
 
+    val showBottomBarOn = setOf(
+        Routes.Home,
+        Routes.Tasks,
+        Routes.TaskStatus,
+        Routes.Settings
+    )
+
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         bottomBar = {
-            if (currentRoute in listOf(
-                    Routes.Home,
-                    Routes.Tasks,
-                    Routes.TaskStatus,
-                    Routes.Settings
-                )
-            ) {
+            if (currentRoute in showBottomBarOn) {
                 BottomNavigationBar(navController)
             }
         }
@@ -57,10 +65,14 @@ fun AppNavigation(navController: NavHostController, settingsViewModel: SettingsV
             composable(Routes.Tasks) { TaskScreen(navController, taskViewModel) }
             composable(Routes.AddTask) { AddTaskScreen(navController, taskViewModel) }
 
-            // ✅ Edit Task (NEW — FIXED)
+            // Edit Task
             composable("edit_task/{taskId}") { backStackEntry ->
                 val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
-                UpdateTaskScreen(taskId = taskId, navController = navController, viewModel = taskViewModel)
+                UpdateTaskScreen(
+                    taskId = taskId,
+                    navController = navController,
+                    viewModel = taskViewModel
+                )
             }
 
             // Task Status

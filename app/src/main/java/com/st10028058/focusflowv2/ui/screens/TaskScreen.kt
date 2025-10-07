@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +45,7 @@ fun TaskScreen(
     navController: NavController,
     viewModel: TaskViewModel = viewModel()
 ) {
+    val colors = MaterialTheme.colorScheme
     val tasks by viewModel.tasks.collectAsState()
     val context = LocalContext.current
     val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -80,24 +82,31 @@ fun TaskScreen(
         if (userId != null) viewModel.fetchTasks()
     }
 
-    // Background gradient
+    // Theme-aware purple header gradient
+    val backdrop = if (colors.surface.luminance() < 0.5f) {
+        Brush.verticalGradient(listOf(colors.primary.copy(alpha = 0.95f), colors.surfaceVariant))
+    } else {
+        Brush.verticalGradient(listOf(colors.primary, colors.primary.copy(alpha = 0.75f)))
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF6A0DAD), Color(0xFF8B2BE2))))
+            .background(backdrop)
     ) {
         Scaffold(
             containerColor = Color.Transparent,
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { navController.navigate(Routes.AddTask) },
-                    containerColor = Color(0xFFE91E63),
+                    containerColor = colors.secondary,
+                    contentColor = colors.onSecondary,
                     shape = CircleShape,
                     modifier = Modifier
                         .padding(16.dp)
                         .shadow(8.dp, CircleShape)
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Add Task", tint = Color.White)
+                    Icon(Icons.Filled.Add, contentDescription = "Add Task")
                 }
             }
         ) { padding ->
@@ -164,7 +173,6 @@ fun TaskScreen(
                                 task = task,
                                 onEdit = {
                                     task._id?.let { id ->
-                                        // ✅ Fixed navigation crash
                                         navController.navigate("edit_task/$id")
                                     }
                                 },
@@ -199,118 +207,127 @@ fun TaskScreen(
     }
 }
 
-// 🎨 Fancy Task Card (with all details)
+/* -------------------- Card -------------------- */
+
 @Composable
 fun FancyTaskCard(
     task: Task,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val isDark = colors.surface.luminance() < 0.5f
 
-    val borderColor = when (task.priority.lowercase()) {
-        "high" -> Color(0xFFFF5252)
-        "normal" -> Color(0xFFFFC107)
-        "low" -> Color(0xFF4CAF50)
-        else -> Color.LightGray
+    val priorityTint = when (task.priority.lowercase()) {
+        "high" -> Color(0xFFFF4D4D)
+        "low"  -> Color(0xFF2ECC71)
+        else   -> Color(0xFFFFB020)
     }
-
+    val overlayAlpha = if (isDark) 0.24f else 0.10f
     val isCompleted = task.completed == true
-
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Confirm Deletion") },
-            text = { Text("Are you sure you want to delete this task?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDeleteDialog = false
-                    onDelete()
-                }) {
-                    Text("Delete", color = Color.Red, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
 
     Card(
         shape = RoundedCornerShape(18.dp),
         modifier = Modifier
             .fillMaxWidth()
             .shadow(6.dp, RoundedCornerShape(18.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
-        Column(
-            modifier = Modifier
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(borderColor.copy(alpha = 0.1f), Color.Transparent)
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            Box(
+                modifier = Modifier
+                    .width(6.dp)
+                    .fillMaxHeight()
+                    .background(priorityTint)
+            )
+
+            // 🔁 Change meta text color to black in light mode, white in dark
+            val metaColor = if (isDark) Color.White else Color(0xFF111111)
+
+            Column(
+                modifier = Modifier
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(priorityTint.copy(alpha = overlayAlpha), Color.Transparent)
+                        )
+                    )
+                    .padding(16.dp)
+                    .alpha(if (isCompleted) 0.75f else 1f)
+                    .weight(1f)
+            ) {
+                // Title stays bold; use black in light mode, white in dark
+                Text(
+                    text = task.title,
+                    color = if (isDark) Color.White else Color(0xFF111111),
+                    fontWeight = FontWeight.Bold,
+                    style = TextStyle(
+                        textDecoration = if (isCompleted) TextDecoration.LineThrough else null
                     )
                 )
-                .padding(16.dp)
-                .alpha(if (isCompleted) 0.6f else 1f)
-        ) {
-            Text(
-                text = task.title,
-                fontWeight = FontWeight.Bold,
-                style = TextStyle(
-                    textDecoration = if (isCompleted) TextDecoration.LineThrough else null
+
+                Text(
+                    text = "Priority: ${task.priority}",
+                    color = priorityTint,
+                    fontWeight = FontWeight.SemiBold
                 )
-            )
 
-            Text("Priority: ${task.priority}", color = borderColor)
-
-            if (task.startTime != null) {
-                val start = android.text.format.DateFormat.format("EEE, d MMM yyyy HH:mm", task.startTime)
-                val end = android.text.format.DateFormat.format("HH:mm", task.endTime ?: task.startTime)
-                Text("🕒 $start → $end", color = Color.DarkGray)
-            }
-
-            if ((task.reminderOffsetMinutes ?: 0) > 0) {
-                Text("🔔 Reminder: ${task.reminderOffsetMinutes} mins before", color = Color.Gray)
-            }
-
-            if (!task.location.isNullOrBlank()) {
-                Text("📍 Location: ${task.location}", color = Color.Gray)
-            }
-
-            Text(
-                text = if (isCompleted) "✅ Completed" else "⌛ Pending",
-                color = if (isCompleted) Color(0xFF4CAF50) else Color(0xFFFF9800),
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Filled.Edit, contentDescription = "Edit", tint = Color(0xFF6A0DAD))
+                if (task.startTime != null) {
+                    val start = android.text.format.DateFormat.format("EEE, d MMM yyyy HH:mm", task.startTime)
+                    val end = android.text.format.DateFormat.format("HH:mm", task.endTime ?: task.startTime)
+                    Text(
+                        text = "🕒 $start → $end",
+                        color = metaColor,
+                        fontWeight = FontWeight.Bold   // ⬅️ bold in light mode now
+                    )
                 }
-                IconButton(onClick = { showDeleteDialog = true }) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = Color.Red)
+
+                if ((task.reminderOffsetMinutes ?: 0) > 0) {
+                    Text(
+                        text = "🔔 Reminder: ${task.reminderOffsetMinutes} mins before",
+                        color = metaColor,
+                        fontWeight = FontWeight.Bold   // ⬅️ bold
+                    )
+                }
+
+                if (!task.location.isNullOrBlank()) {
+                    Text(
+                        text = "📍 Location: ${task.location}",
+                        color = metaColor,
+                        fontWeight = FontWeight.Bold   // ⬅️ bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    IconButton(onClick = onEdit) {
+                        Icon(Icons.Filled.Edit, contentDescription = "Edit", tint = colors.primary)
+                    }
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = colors.error)
+                    }
                 }
             }
         }
     }
 }
 
-// 🔽 Priority Filter Dropdown
+/* -------------------- Filters -------------------- */
+
 @Composable
 fun PriorityFilterDropdown(
     selectedPriority: String,
     onPrioritySelected: (String) -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     var expanded by remember { mutableStateOf(false) }
 
     OutlinedButton(
         onClick = { expanded = true },
         modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+        border = ButtonDefaults.outlinedButtonBorder
     ) {
         Text("Filter: $selectedPriority", color = Color.White)
     }
@@ -318,7 +335,7 @@ fun PriorityFilterDropdown(
     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
         listOf("All", "High", "Normal", "Low").forEach { option ->
             DropdownMenuItem(
-                text = { Text(option) },
+                text = { Text(option, color = colors.onSurface) },
                 onClick = {
                     onPrioritySelected(option)
                     expanded = false
@@ -328,18 +345,19 @@ fun PriorityFilterDropdown(
     }
 }
 
-// 🔽 Sort Dropdown
 @Composable
 fun SortDropdown(
     selectedSort: String,
     onSortSelected: (String) -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     var expanded by remember { mutableStateOf(false) }
 
     OutlinedButton(
         onClick = { expanded = true },
         modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+        border = ButtonDefaults.outlinedButtonBorder
     ) {
         Text("Sort: $selectedSort", color = Color.White)
     }
@@ -347,7 +365,7 @@ fun SortDropdown(
     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
         listOf("Newest First", "Oldest First", "Priority (High → Low)").forEach { option ->
             DropdownMenuItem(
-                text = { Text(option) },
+                text = { Text(option, color = colors.onSurface) },
                 onClick = {
                     onSortSelected(option)
                     expanded = false
@@ -357,7 +375,8 @@ fun SortDropdown(
     }
 }
 
-// 📊 Task Stats Bar
+/* -------------------- Stats (white card, black labels, colored numbers) -------------------- */
+
 @Composable
 fun TaskStatsBar(tasks: List<Task>) {
     val total = tasks.size
@@ -365,29 +384,45 @@ fun TaskStatsBar(tasks: List<Task>) {
     val normal = tasks.count { it.priority.equals("Normal", true) }
     val low = tasks.count { it.priority.equals("Low", true) }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    val labelColor = Color(0xFF111111)      // black-ish label text
+    val highTone   = Color(0xFFFF4D4D)      // red
+    val normalTone = Color(0xFFFFB020)      // amber
+    val lowTone    = Color(0xFF2ECC71)      // green
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        StatChip("Total", total, Color.White)
-        StatChip("High", high, Color(0xFFFF5252))
-        StatChip("Normal", normal, Color(0xFFFFC107))
-        StatChip("Low", low, Color(0xFF4CAF50))
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            StatChip("Total",  total,  labelColor, labelColor, modifier = Modifier.weight(1f))
+            StatChip("High",   high,   labelColor, highTone,   modifier = Modifier.weight(1f))
+            StatChip("Normal", normal, labelColor, normalTone, modifier = Modifier.weight(1f))
+            StatChip("Low",    low,    labelColor, lowTone,    modifier = Modifier.weight(1f))
+        }
     }
 }
 
-// 🔹 Stat Chip
 @Composable
-fun StatChip(label: String, count: Int, color: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, color = color.copy(alpha = 0.9f), fontWeight = FontWeight.SemiBold)
+fun StatChip(
+    label: String,
+    count: Int,
+    labelColor: Color,
+    numberColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(label, color = labelColor, fontWeight = FontWeight.SemiBold)
         Text(
             text = count.toString(),
-            color = color,
+            color = numberColor,
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.titleLarge
         )

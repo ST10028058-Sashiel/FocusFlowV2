@@ -34,7 +34,31 @@ fun RegisterScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
-    // 🌈 Background gradient (brand style)
+    // ✅ High-contrast field colors (black text on white) for BOTH themes
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = Color(0xFF111111),
+        unfocusedTextColor = Color(0xFF111111),
+        disabledTextColor = Color(0xFF111111),
+
+        focusedContainerColor = Color.White,
+        unfocusedContainerColor = Color.White,
+        disabledContainerColor = Color.White,
+
+        focusedBorderColor = Color(0xFF6A0DAD),
+        unfocusedBorderColor = Color(0xFFB080E0),
+        disabledBorderColor = Color(0xFFB080E0),
+
+        cursorColor = Color(0xFF6A0DAD),
+
+        focusedLabelColor = Color(0xFF333333),
+        unfocusedLabelColor = Color(0xFF555555),
+        disabledLabelColor = Color(0xFF777777),
+
+        focusedPlaceholderColor = Color(0xFF8E8E8E),
+        unfocusedPlaceholderColor = Color(0xFF8E8E8E),
+        disabledPlaceholderColor = Color(0xFF8E8E8E)
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -51,7 +75,6 @@ fun RegisterScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // ✅ Logo and header
             Image(
                 painter = painterResource(id = R.drawable.focusflow_logo),
                 contentDescription = "FocusFlow Logo",
@@ -75,7 +98,6 @@ fun RegisterScreen(navController: NavController) {
                 modifier = Modifier.padding(bottom = 20.dp)
             )
 
-            // 🧾 Registration Card
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -91,7 +113,8 @@ fun RegisterScreen(navController: NavController) {
                         onValueChange = { email = it },
                         label = { Text("Email") },
                         modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        colors = fieldColors
                     )
 
                     Spacer(Modifier.height(12.dp))
@@ -102,12 +125,12 @@ fun RegisterScreen(navController: NavController) {
                         label = { Text("Password") },
                         modifier = Modifier.fillMaxWidth(),
                         visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        colors = fieldColors
                     )
 
                     Spacer(Modifier.height(20.dp))
 
-                    // 💜 Register Button
                     Button(
                         onClick = {
                             if (email.isBlank() || password.isBlank()) {
@@ -144,7 +167,7 @@ fun RegisterScreen(navController: NavController) {
                     Spacer(Modifier.height(10.dp))
 
                     TextButton(onClick = { navController.navigate(Routes.Login) }) {
-                        Text("Already have an account? ", color = Color.DarkGray)
+                        Text("Already have an account? ", color = Color(0xFF222222))
                         Text("Sign In", color = Color(0xFF6A0DAD), fontWeight = FontWeight.Bold)
                     }
                 }
@@ -152,7 +175,6 @@ fun RegisterScreen(navController: NavController) {
 
             Spacer(Modifier.height(25.dp))
 
-            // 🧠 Motivational footer
             Text(
                 "Stay focused. Stay productive.",
                 color = Color.White,

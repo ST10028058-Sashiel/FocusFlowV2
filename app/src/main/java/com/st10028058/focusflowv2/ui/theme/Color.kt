@@ -2,10 +2,15 @@ package com.st10028058.focusflowv2.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Brand colors you already use
+val BrandPurple = Color(0xFF6A0DAD)
+val BrandPink = Color(0xFFE91E63)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Optional neutrals used by the palette
+val LightBg = Color(0xFFF9F6FF)
+val DarkBg = Color(0xFF0F0D12)
+val DarkSurface = Color(0xFF17141D)
+val LightSurfaceVariant = Color(0xFFEAE2F7)
+val DarkSurfaceVariant = Color(0xFF2A2433)
+val LightOutline = Color(0xFFB9AEDA)
+val DarkOutline = Color(0xFF6E6581)

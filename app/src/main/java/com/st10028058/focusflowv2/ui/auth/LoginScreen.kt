@@ -68,6 +68,31 @@ fun LoginScreen(navController: NavController) {
         }
     }
 
+    // 🔧 High-contrast field colors (black text on white) for BOTH themes
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = Color(0xFF111111),
+        unfocusedTextColor = Color(0xFF111111),
+        disabledTextColor = Color(0xFF111111),
+
+        focusedContainerColor = Color.White,
+        unfocusedContainerColor = Color.White,
+        disabledContainerColor = Color.White,
+
+        focusedBorderColor = Color(0xFF6A0DAD),
+        unfocusedBorderColor = Color(0xFFB080E0),
+        disabledBorderColor = Color(0xFFB080E0),
+
+        cursorColor = Color(0xFF6A0DAD),
+
+        focusedLabelColor = Color(0xFF333333),
+        unfocusedLabelColor = Color(0xFF555555),
+        disabledLabelColor = Color(0xFF777777),
+
+        focusedPlaceholderColor = Color(0xFF8E8E8E),
+        unfocusedPlaceholderColor = Color(0xFF8E8E8E),
+        disabledPlaceholderColor = Color(0xFF8E8E8E)
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -99,7 +124,6 @@ fun LoginScreen(navController: NavController) {
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
-
             Text(
                 "Productivity App",
                 fontSize = 16.sp,
@@ -123,7 +147,8 @@ fun LoginScreen(navController: NavController) {
                         onValueChange = { email = it },
                         label = { Text("Email") },
                         modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        colors = fieldColors
                     )
 
                     Spacer(Modifier.height(12.dp))
@@ -134,7 +159,8 @@ fun LoginScreen(navController: NavController) {
                         label = { Text("Password") },
                         modifier = Modifier.fillMaxWidth(),
                         visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        colors = fieldColors
                     )
 
                     Spacer(Modifier.height(16.dp))
@@ -174,13 +200,12 @@ fun LoginScreen(navController: NavController) {
                     Spacer(Modifier.height(8.dp))
 
                     TextButton(onClick = { navController.navigate(Routes.Register) }) {
-                        Text("Don’t have an account? ", color = Color.DarkGray)
+                        Text("Don’t have an account? ", color = Color(0xFF222222))
                         Text("Create one", color = Color(0xFF6A0DAD), fontWeight = FontWeight.Bold)
                     }
 
                     Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFB080E0))
 
-                    // ✅ Google Sign-In Button (Color Updated)
                     Button(
                         onClick = {
                             val signInIntent = googleSignInClient.signInIntent
@@ -190,7 +215,7 @@ fun LoginScreen(navController: NavController) {
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A0DAD)) // 💜 Updated Color
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A0DAD))
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_google),
@@ -207,7 +232,7 @@ fun LoginScreen(navController: NavController) {
             Spacer(Modifier.height(18.dp))
 
             TextButton(onClick = { /* Forgot Password Navigation */ }) {
-                Text("Forgot Password?", color = Color.White)
+                Text("Forgot Password?", color = Color.White) // stays white on the purple background
             }
         }
     }
