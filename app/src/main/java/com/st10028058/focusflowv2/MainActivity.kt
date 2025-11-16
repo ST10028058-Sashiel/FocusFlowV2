@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
@@ -19,7 +20,7 @@ import com.st10028058.focusflowv2.ui.theme.FocusFlowV2Theme
 import com.st10028058.focusflowv2.utils.LocaleHelper
 import com.st10028058.focusflowv2.viewmodel.SettingsViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.attachBaseContext(newBase))

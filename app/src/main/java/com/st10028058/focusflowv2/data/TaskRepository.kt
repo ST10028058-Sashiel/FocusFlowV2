@@ -143,36 +143,54 @@ class TaskRepository(private val context: Context) {
     
     /**
      * Sync pending tasks with server
+     * Only syncs tasks for the current user
      */
     suspend fun syncPendingTasks() {
         if (!NetworkUtils.isNetworkAvailable(context)) {
             return
         }
         
+        // Get current user ID
+        val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+        if (currentUserId.isNullOrBlank()) {
+            return // No user logged in
+        }
+        
         val tasksToSync = taskDao.getTasksNeedingSync()
+            .filter { it.userId == currentUserId } // Only sync current user's tasks
         
         for (taskEntity in tasksToSync) {
             try {
                 when (taskEntity.syncAction) {
                     "INSERT" -> {
                         val task = taskEntity.toTask()
-                        val response = api.addTask(task)
+                        // Ensure userId is set
+                        val taskWithUserId = task.copy(userId = currentUserId)
+                        val response = api.addTask(taskWithUserId)
                         if (response.isSuccessful) {
                             response.body()?.let { syncedTask ->
-                                // Update with server ID, keep same localId
+                                // Update with server ID, keep same localId, ensure userId
                                 val updatedEntity = syncedTask.toEntity(isSynced = true)
-                                    .copy(localId = taskEntity.localId, _id = syncedTask._id)
+                                    .copy(
+                                        localId = taskEntity.localId, 
+                                        _id = syncedTask._id,
+                                        userId = currentUserId
+                                    )
                                 taskDao.insertTask(updatedEntity)
                             }
                         }
                     }
                     "UPDATE" -> {
                         val task = taskEntity.toTask()
+                        // Ensure userId is set
+                        val taskWithUserId = task.copy(userId = currentUserId)
                         task._id?.let { id ->
-                            val response = api.updateTask(id, task)
+                            val response = api.updateTask(id, taskWithUserId)
                             if (response.isSuccessful) {
                                 response.body()?.let { syncedTask ->
-                                    taskDao.insertTask(syncedTask.toEntity(isSynced = true))
+                                    val syncedEntity = syncedTask.toEntity(isSynced = true)
+                                        .copy(userId = currentUserId)
+                                    taskDao.insertTask(syncedEntity)
                                 }
                             }
                         }
@@ -195,22 +213,39 @@ class TaskRepository(private val context: Context) {
     
     /**
      * Fetch tasks from server and update local database
+     * Only fetches tasks for the specified user
      */
-    suspend fun fetchTasksFromServer() {
-        if (!NetworkUtils.isNetworkAvailable(context)) {
+    suspend fun fetchTasksFromServer(userId: String) {
+        if (!NetworkUtils.isNetworkAvailable(context) || userId.isBlank()) {
             return
         }
         
         try {
-            val response = api.getTasks()
+            // Pass userId as query parameter to backend
+            val response = api.getTasks(userId)
             if (response.isSuccessful) {
                 response.body()?.let { tasks ->
-                    // Convert to entities and save
-                    val entities = tasks.map { it.toEntity(isSynced = true) }
-                    taskDao.insertTasks(entities)
+                    // Backend should already filter by userId, but double-check client-side
+                    val userTasks = tasks.filter { it.userId == userId }
+                    // Ensure all tasks have userId set
+                    val tasksWithUserId = userTasks.map { task ->
+                        if (task.userId != userId) {
+                            task.copy(userId = userId)
+                        } else {
+                            task
+                        }
+                    }
+                    val entities = tasksWithUserId.map { it.toEntity(isSynced = true) }
+                    if (entities.isNotEmpty()) {
+                        taskDao.insertTasks(entities)
+                    }
                 }
+            } else {
+                // Log error response
+                android.util.Log.e("TaskRepository", "Failed to fetch tasks: ${response.code()} - ${response.message()}")
             }
         } catch (e: Exception) {
+            android.util.Log.e("TaskRepository", "Error fetching tasks from server", e)
             e.printStackTrace()
         }
     }

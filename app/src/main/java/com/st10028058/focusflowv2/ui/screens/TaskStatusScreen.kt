@@ -28,23 +28,80 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.fragment.app.FragmentActivity
 import com.st10028058.focusflowv2.data.Task
+import com.st10028058.focusflowv2.data.BiometricHelper
 import com.st10028058.focusflowv2.viewmodel.TaskViewModel
+import com.st10028058.focusflowv2.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskStatusScreen(
     navController: NavController,
-    viewModel: TaskViewModel = viewModel()
+    viewModel: TaskViewModel = viewModel(),
+    settingsViewModel: SettingsViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val tasks by viewModel.tasks.collectAsState()
+    val biometricEnabled by settingsViewModel.biometricEnabled.collectAsState()
+    val biometricHelper = remember { BiometricHelper(context) }
+    val isBiometricAvailable = remember { biometricHelper.isBiometricAvailable() }
 
     val outstandingTasks = tasks.filter { !it.completed }
     val completedTasks = tasks.filter { it.completed }
 
     // Refresh tasks when entering screen
     LaunchedEffect(Unit) { viewModel.fetchTasks() }
+    
+    // Function to handle task status update with biometric verification
+    val onTaskStatusUpdate: (Task, Boolean) -> Unit = { task, isChecked ->
+        // Check if biometric is enabled and available
+        if (biometricEnabled && isBiometricAvailable) {
+            // Require biometric authentication
+            val activity = when {
+                context is FragmentActivity -> context
+                else -> null
+            }
+            
+            if (activity != null) {
+                biometricHelper.authenticate(
+                    activity = activity,
+                    title = "Verify Identity",
+                    subtitle = "Please authenticate to update task status",
+                    negativeButtonText = "Cancel",
+                    onSuccess = {
+                        // Biometric successful - proceed with update
+                        val updatedTask = task.copy(completed = isChecked)
+                        viewModel.updateTask(task._id ?: "", updatedTask)
+                        Toast.makeText(
+                            context,
+                            if (isChecked) "Marked as completed ✅" else "Marked as pending ⏳",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    onError = { error ->
+                        if (error != "User canceled") {
+                            Toast.makeText(context, "Authentication failed: $error", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onFailed = {
+                        Toast.makeText(context, "Authentication failed. Please try again.", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            } else {
+                Toast.makeText(context, "Unable to access biometric authentication", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            // Biometric not enabled or not available - allow update without verification
+            val updatedTask = task.copy(completed = isChecked)
+            viewModel.updateTask(task._id ?: "", updatedTask)
+            Toast.makeText(
+                context,
+                if (isChecked) "Marked as completed ✅" else "Marked as pending ⏳",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 
     val colors = MaterialTheme.colorScheme
 
@@ -97,13 +154,7 @@ fun TaskStatusScreen(
                         task = task,
                         dimCompleted = false,
                         onCheckedChange = { isChecked ->
-                            val updatedTask = task.copy(completed = isChecked)
-                            viewModel.updateTask(task._id ?: "", updatedTask)
-                            Toast.makeText(
-                                context,
-                                if (isChecked) "Marked as completed ✅" else "Marked as pending ⏳",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            onTaskStatusUpdate(task, isChecked)
                         }
                     )
                 }
@@ -135,13 +186,7 @@ fun TaskStatusScreen(
                         task = task,
                         dimCompleted = true,
                         onCheckedChange = { isChecked ->
-                            val updatedTask = task.copy(completed = isChecked)
-                            viewModel.updateTask(task._id ?: "", updatedTask)
-                            Toast.makeText(
-                                context,
-                                if (isChecked) "Marked as completed ✅" else "Marked as pending ⏳",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            onTaskStatusUpdate(task, isChecked)
                         }
                     )
                 }

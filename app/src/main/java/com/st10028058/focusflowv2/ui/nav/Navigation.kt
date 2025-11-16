@@ -76,7 +76,13 @@ fun AppNavigation(
             }
 
             // Task Status
-            composable(Routes.TaskStatus) { TaskStatusScreen(navController, taskViewModel) }
+            composable(Routes.TaskStatus) { 
+                TaskStatusScreen(
+                    navController = navController, 
+                    viewModel = taskViewModel,
+                    settingsViewModel = settingsViewModel
+                ) 
+            }
 
             // Settings
             composable(Routes.Settings) {

@@ -116,9 +116,11 @@ fun TaskScreen(
         }
     }
 
-    // Load tasks
+    // Load tasks when screen loads or userId changes
     LaunchedEffect(userId) {
-        if (userId != null) viewModel.fetchTasks()
+        if (userId != null && userId.isNotBlank()) {
+            viewModel.fetchTasks()
+        }
     }
 
     // Theme-aware header gradient

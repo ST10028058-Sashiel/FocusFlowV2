@@ -21,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,6 +54,15 @@ fun SettingsScreen(
     val user = auth.currentUser
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    
+    // Get activity for biometric authentication
+    val activity = remember {
+        when (context) {
+            is FragmentActivity -> context
+            is android.app.Activity -> context as? FragmentActivity
+            else -> null
+        }
+    }
 
     val themeMode by settingsViewModel.themeMode.collectAsState()
     val biometricEnabled by settingsViewModel.biometricEnabled.collectAsState()
@@ -220,52 +230,195 @@ fun SettingsScreen(
                     checked = notificationsEnabled,
                     onCheckedChange = { notificationsEnabled = it }
                 )
-                SettingRow(
-                    icon = Icons.Default.Fingerprint,
-                    title = "Biometric Login",
-                    checked = biometricEnabled,
-                    enabled = isBiometricAvailable,
-                    onCheckedChange = { enabled ->
-                        if (enabled) {
-                            // User wants to enable biometric - prompt for authentication
-                            val activity = context as? FragmentActivity
-                            if (activity != null && isBiometricAvailable) {
-                                biometricHelper.authenticate(
-                                    activity = activity,
-                                    title = "Enable Biometric Login",
-                                    subtitle = "Authenticate to enable biometric login for FocusFlow",
-                                    negativeButtonText = "Cancel",
-                                    onSuccess = {
-                                        settingsViewModel.toggleBiometric(true)
-                                        Toast.makeText(context, "Biometric login enabled", Toast.LENGTH_SHORT).show()
-                                    },
-                                    onError = { error ->
-                                        Toast.makeText(context, "Biometric authentication failed: $error", Toast.LENGTH_SHORT).show()
-                                    },
-                                    onFailed = {
-                                        Toast.makeText(context, "Biometric authentication failed", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-                            } else {
-                                Toast.makeText(context, "Biometric authentication not available", Toast.LENGTH_SHORT).show()
-                            }
-                        } else {
-                            // User wants to disable biometric - clear saved credentials
-                            settingsViewModel.toggleBiometric(false)
-                            credentialManager.clearCredentials()
-                            Toast.makeText(context, "Biometric login disabled", Toast.LENGTH_SHORT).show()
+                // Enhanced Biometric Login with prompt card
+                if (!isBiometricAvailable) {
+                    // Show status message if biometrics not available
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Fingerprint,
+                            contentDescription = null,
+                            tint = colors.onSurface.copy(alpha = 0.38f)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Biometric Login",
+                                fontWeight = FontWeight.Medium,
+                                color = colors.onSurface.copy(alpha = 0.38f),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Text(
+                                biometricStatusMessage,
+                                color = colors.onSurfaceVariant.copy(alpha = 0.7f),
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         }
                     }
-                )
+                } else if (!biometricEnabled && !settingsViewModel.hasBeenAskedAboutBiometrics()) {
+                    // Show prompt card if biometrics available but not enabled
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = colors.primaryContainer.copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.Fingerprint,
+                                    contentDescription = null,
+                                    tint = colors.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Text(
+                                    "Enable Biometric Login?",
+                                    fontWeight = FontWeight.Bold,
+                                    color = colors.primary,
+                                    style = MaterialTheme.typography.titleSmall
+                                )
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "Quick and secure access using your fingerprint or face recognition.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.End,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Button(
+                                    onClick = {
+                                        // Try multiple ways to get FragmentActivity
+                                        val fragmentActivity: FragmentActivity? = when {
+                                            activity != null -> activity
+                                            context is FragmentActivity -> context
+                                            else -> {
+                                                // Try to get from context
+                                                var act: FragmentActivity? = null
+                                                try {
+                                                    if (context is android.app.Activity) {
+                                                        act = context as? FragmentActivity
+                                                    }
+                                                } catch (e: Exception) {
+                                                    // Ignore
+                                                }
+                                                act
+                                            }
+                                        }
+                                        
+                                        if (fragmentActivity != null) {
+                                            try {
+                                                biometricHelper.authenticate(
+                                                    activity = fragmentActivity,
+                                                    title = "Enable Biometric Login",
+                                                    subtitle = "Authenticate to enable biometric login for FocusFlow",
+                                                    negativeButtonText = "Cancel",
+                                                    onSuccess = {
+                                                        settingsViewModel.toggleBiometric(true)
+                                                        settingsViewModel.setBiometricPromptShown(true)
+                                                        // Save credentials if user is logged in
+                                                        val currentUser = FirebaseAuth.getInstance().currentUser
+                                                        currentUser?.email?.let { email ->
+                                                            if (credentialManager.isGoogleLogin()) {
+                                                                credentialManager.saveGoogleLogin(email)
+                                                            }
+                                                        }
+                                                        Toast.makeText(context, "Biometric login enabled!", Toast.LENGTH_SHORT).show()
+                                                    },
+                                                    onError = { error ->
+                                                        if (error != "User canceled") {
+                                                            Toast.makeText(context, "Biometric setup failed: $error", Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    },
+                                                    onFailed = {
+                                                        Toast.makeText(context, "Biometric authentication failed", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                )
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } else {
+                                            Toast.makeText(context, "Unable to access biometric authentication. Please try again.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colors.primary
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.defaultMinSize(minWidth = 100.dp)
+                                ) {
+                                    Text("Enable", color = Color.White)
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                TextButton(
+                                    onClick = {
+                                        settingsViewModel.setBiometricPromptShown(true)
+                                    }
+                                ) {
+                                    Text("Dismiss", color = colors.onSurfaceVariant)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Regular toggle if already asked or enabled
+                    SettingRow(
+                        icon = Icons.Default.Fingerprint,
+                        title = "Biometric Login",
+                        checked = biometricEnabled,
+                        enabled = isBiometricAvailable,
+                        onCheckedChange = { enabled ->
+                            if (enabled) {
+                                // User wants to enable biometric - prompt for authentication
+                                if (activity != null && isBiometricAvailable) {
+                                    biometricHelper.authenticate(
+                                        activity = activity,
+                                        title = "Enable Biometric Login",
+                                        subtitle = "Authenticate to enable biometric login for FocusFlow",
+                                        negativeButtonText = "Cancel",
+                                        onSuccess = {
+                                            settingsViewModel.toggleBiometric(true)
+                                            Toast.makeText(context, "Biometric login enabled", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onError = { error ->
+                                            Toast.makeText(context, "Biometric authentication failed: $error", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onFailed = {
+                                            Toast.makeText(context, "Biometric authentication failed", Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                } else {
+                                    Toast.makeText(context, "Biometric authentication not available", Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                // User wants to disable biometric - clear saved credentials
+                                settingsViewModel.toggleBiometric(false)
+                                credentialManager.clearCredentials()
+                                Toast.makeText(context, "Biometric login disabled", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+                }
+                // Status message and refresh button for when biometrics are not available
                 if (!isBiometricAvailable) {
                     Column(
                         modifier = Modifier.padding(start = 40.dp, top = 4.dp)
                     ) {
-                        Text(
-                            text = "Status: $biometricStatusMessage",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.error
-                        )
                         TextButton(
                             onClick = {
                                 // Refresh biometric status

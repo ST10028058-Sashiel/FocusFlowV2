@@ -45,6 +45,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _language = MutableStateFlow(prefs.getString("language", "en") ?: "en")
     val language: StateFlow<String> = _language
 
+    // Track if user has been asked about biometrics
+    fun hasBeenAskedAboutBiometrics(): Boolean {
+        return prefs.getBoolean("biometric_prompt_shown", false)
+    }
+
+    fun setBiometricPromptShown(shown: Boolean) {
+        prefs.edit().putBoolean("biometric_prompt_shown", shown).apply()
+    }
+
     fun setThemeMode(mode: ThemeMode) {
         _themeMode.value = mode
         prefs.edit().putString("themeMode", mode.name).apply()

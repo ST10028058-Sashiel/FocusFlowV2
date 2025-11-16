@@ -15,24 +15,46 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.shadow
 import androidx.navigation.NavController
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fingerprint
 import com.google.firebase.auth.FirebaseAuth
 import com.st10028058.focusflowv2.R
+import com.st10028058.focusflowv2.data.BiometricHelper
+import com.st10028058.focusflowv2.data.CredentialManager
 import com.st10028058.focusflowv2.ui.nav.Routes
+import com.st10028058.focusflowv2.viewmodel.SettingsViewModel
 
 @Composable
 fun RegisterScreen(navController: NavController) {
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
+    val settingsViewModel: SettingsViewModel = viewModel()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+    var showBiometricPrompt by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    
+    // Validation states
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    
+    val biometricHelper = remember { BiometricHelper(context) }
+    val credentialManager = remember { CredentialManager(context) }
+    val isBiometricAvailable = remember(biometricHelper) { biometricHelper.isBiometricAvailable() }
+    val biometricEnabled by settingsViewModel.biometricEnabled.collectAsState()
 
     // ✅ High-contrast field colors (black text on white) for BOTH themes
     val fieldColors = OutlinedTextFieldDefaults.colors(
@@ -104,44 +126,107 @@ fun RegisterScreen(navController: NavController) {
                 ) {
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = { 
+                            email = it
+                            emailError = null // Clear error when user types
+                        },
                         label = { Text("Email") },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        colors = fieldColors
+                        colors = fieldColors,
+                        isError = emailError != null,
+                        supportingText = emailError?.let { 
+                            { Text(it, color = MaterialTheme.colorScheme.error) }
+                        }
                     )
 
                     Spacer(Modifier.height(12.dp))
 
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = { 
+                            password = it
+                            passwordError = null // Clear error when user types
+                        },
                         label = { Text("Password") },
                         modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        colors = fieldColors
+                        colors = fieldColors,
+                        isError = passwordError != null,
+                        supportingText = passwordError?.let { 
+                            { Text(it, color = MaterialTheme.colorScheme.error) }
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                                    tint = if (passwordError != null) MaterialTheme.colorScheme.error else Color(0xFF6A0DAD)
+                                )
+                            }
+                        }
                     )
 
                     Spacer(Modifier.height(20.dp))
 
                     Button(
                         onClick = {
-                            if (email.isBlank() || password.isBlank()) {
-                                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                            // Clear previous errors
+                            emailError = null
+                            passwordError = null
+                            
+                            // Validate email
+                            val emailPattern = android.util.Patterns.EMAIL_ADDRESS
+                            if (email.isBlank()) {
+                                emailError = "Email is required"
+                                return@Button
+                            } else if (!emailPattern.matcher(email).matches()) {
+                                emailError = "Please enter a valid email address"
+                                return@Button
+                            }
+                            
+                            // Validate password
+                            if (password.isBlank()) {
+                                passwordError = "Password is required"
+                                return@Button
+                            } else if (password.length < 6) {
+                                passwordError = "Password must be at least 6 characters"
                                 return@Button
                             }
 
                             isLoading = true
-                            auth.createUserWithEmailAndPassword(email, password)
+                            auth.createUserWithEmailAndPassword(email.trim(), password)
                                 .addOnCompleteListener { task ->
                                     isLoading = false
                                     if (task.isSuccessful) {
-                                        navController.navigate(Routes.Home) {
-                                            popUpTo(Routes.Register) { inclusive = true }
+                                        // Save credentials if biometric is enabled
+                                        if (biometricEnabled && isBiometricAvailable) {
+                                            credentialManager.saveCredentials(email.trim(), password)
+                                        }
+                                        
+                                        // Prompt user to enable biometrics if available but not enabled
+                                        if (isBiometricAvailable && !biometricEnabled && !settingsViewModel.hasBeenAskedAboutBiometrics()) {
+                                            showBiometricPrompt = true
+                                        } else {
+                                            Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
+                                            navController.navigate(Routes.Home) {
+                                                popUpTo(Routes.Register) { inclusive = true }
+                                            }
                                         }
                                     } else {
-                                        Toast.makeText(context, "Registration failed", Toast.LENGTH_SHORT).show()
+                                        // Handle Firebase errors
+                                        val errorMessage = when {
+                                            task.exception?.message?.contains("email address is already in use") == true -> 
+                                                "This email is already registered. Please sign in instead."
+                                            task.exception?.message?.contains("invalid email") == true -> 
+                                                "Invalid email address format"
+                                            task.exception?.message?.contains("password") == true -> 
+                                                "Password is too weak. Please use a stronger password."
+                                            else -> 
+                                                task.exception?.message ?: "Registration failed. Please try again."
+                                        }
+                                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                                     }
                                 }
                         },
@@ -175,6 +260,106 @@ fun RegisterScreen(navController: NavController) {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center
+            )
+        }
+        
+        // Biometric Enable Prompt Dialog
+        if (showBiometricPrompt) {
+            AlertDialog(
+                onDismissRequest = {
+                    settingsViewModel.setBiometricPromptShown(true)
+                    showBiometricPrompt = false
+                    navController.navigate(Routes.Home) {
+                        popUpTo(Routes.Register) { inclusive = true }
+                    }
+                },
+                icon = {
+                    Icon(
+                        Icons.Default.Fingerprint,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(48.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        "Enable Biometric Login?",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                text = {
+                    Column {
+                        Text(
+                            "Quick and secure access to your account using your fingerprint or face recognition.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "You can enable this feature anytime in Settings.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            settingsViewModel.setBiometricPromptShown(true)
+                            showBiometricPrompt = false
+                            val activity = context as? FragmentActivity
+                            if (activity != null) {
+                                biometricHelper.authenticate(
+                                    activity = activity,
+                                    title = "Enable Biometric Login",
+                                    subtitle = "Authenticate to enable biometric login for FocusFlow",
+                                    negativeButtonText = "Cancel",
+                                    onSuccess = {
+                                        settingsViewModel.toggleBiometric(true)
+                                        // Save credentials for biometric login
+                                        credentialManager.saveCredentials(email, password)
+                                        Toast.makeText(context, "Biometric login enabled!", Toast.LENGTH_SHORT).show()
+                                        navController.navigate(Routes.Home) {
+                                            popUpTo(Routes.Register) { inclusive = true }
+                                        }
+                                    },
+                                    onError = { error ->
+                                        if (error != "User canceled") {
+                                            Toast.makeText(context, "Biometric setup failed: $error", Toast.LENGTH_SHORT).show()
+                                        }
+                                        navController.navigate(Routes.Home) {
+                                            popUpTo(Routes.Register) { inclusive = true }
+                                        }
+                                    },
+                                    onFailed = {
+                                        Toast.makeText(context, "Biometric authentication failed", Toast.LENGTH_SHORT).show()
+                                        navController.navigate(Routes.Home) {
+                                            popUpTo(Routes.Register) { inclusive = true }
+                                        }
+                                    }
+                                )
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("Enable Now")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            settingsViewModel.setBiometricPromptShown(true)
+                            showBiometricPrompt = false
+                            navController.navigate(Routes.Home) {
+                                popUpTo(Routes.Register) { inclusive = true }
+                            }
+                        }
+                    ) {
+                        Text("Maybe Later")
+                    }
+                }
             )
         }
     }

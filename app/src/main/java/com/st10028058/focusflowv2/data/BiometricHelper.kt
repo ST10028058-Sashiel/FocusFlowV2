@@ -125,12 +125,19 @@ class BiometricHelper(private val context: Context) {
                     BiometricManager.Authenticators.DEVICE_CREDENTIAL
         }
         
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+        val promptInfoBuilder = BiometricPrompt.PromptInfo.Builder()
             .setTitle(title)
             .setSubtitle(subtitle)
-            .setNegativeButtonText(negativeButtonText)
             .setAllowedAuthenticators(authenticators)
-            .build()
+        
+        // Only set negative button text if device credentials are NOT allowed
+        // When DEVICE_CREDENTIAL is allowed, the system provides its own cancel button
+        val hasDeviceCredential = (authenticators and BiometricManager.Authenticators.DEVICE_CREDENTIAL) != 0
+        if (!hasDeviceCredential && negativeButtonText.isNotEmpty()) {
+            promptInfoBuilder.setNegativeButtonText(negativeButtonText)
+        }
+        
+        val promptInfo = promptInfoBuilder.build()
 
         biometricPrompt.authenticate(promptInfo)
     }

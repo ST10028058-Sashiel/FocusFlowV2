@@ -5,7 +5,7 @@ import retrofit2.http.*
 
 interface TaskApi {
     @GET("/tasks")
-    suspend fun getTasks(): Response<List<Task>>
+    suspend fun getTasks(@Query("userId") userId: String): Response<List<Task>>
 
     @POST("/tasks")
     suspend fun addTask(@Body task: Task): Response<Task>
