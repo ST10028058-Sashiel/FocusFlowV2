@@ -200,9 +200,10 @@ fun RegisterScreen(navController: NavController) {
                                 .addOnCompleteListener { task ->
                                     isLoading = false
                                     if (task.isSuccessful) {
-                                        // Save credentials if biometric is enabled
-                                        if (biometricEnabled && isBiometricAvailable) {
-                                            credentialManager.saveCredentials(email.trim(), password)
+                                        // Save credentials for current account if biometric is enabled
+                                        val currentUser = auth.currentUser
+                                        if (biometricEnabled && isBiometricAvailable && currentUser != null) {
+                                            credentialManager.saveCredentials(email.trim(), password, currentUser.uid)
                                         }
                                         
                                         // Prompt user to enable biometrics if available but not enabled
@@ -316,9 +317,12 @@ fun RegisterScreen(navController: NavController) {
                                     negativeButtonText = "Cancel",
                                     onSuccess = {
                                         settingsViewModel.toggleBiometric(true)
-                                        // Save credentials for biometric login
-                                        credentialManager.saveCredentials(email, password)
-                                        Toast.makeText(context, "Biometric login enabled!", Toast.LENGTH_SHORT).show()
+                                        // Save credentials for current account
+                                        val currentUser = auth.currentUser
+                                        if (currentUser != null) {
+                                            credentialManager.saveCredentials(email.trim(), password, currentUser.uid)
+                                        }
+                                        Toast.makeText(context, "Biometric login enabled for this account!", Toast.LENGTH_SHORT).show()
                                         navController.navigate(Routes.Home) {
                                             popUpTo(Routes.Register) { inclusive = true }
                                         }

@@ -247,7 +247,7 @@ fun SettingsScreen(
                         Spacer(Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Biometric Login",
+                                "Biometric Authentication",
                                 fontWeight = FontWeight.Medium,
                                 color = colors.onSurface.copy(alpha = 0.38f),
                                 style = MaterialTheme.typography.bodyLarge
@@ -284,7 +284,7 @@ fun SettingsScreen(
                                 )
                                 Spacer(Modifier.width(12.dp))
                                 Text(
-                                    "Enable Biometric Login?",
+                                    "Enable Biometric Authentication?",
                                     fontWeight = FontWeight.Bold,
                                     color = colors.primary,
                                     style = MaterialTheme.typography.titleSmall
@@ -325,20 +325,32 @@ fun SettingsScreen(
                                             try {
                                                 biometricHelper.authenticate(
                                                     activity = fragmentActivity,
-                                                    title = "Enable Biometric Login",
-                                                    subtitle = "Authenticate to enable biometric login for FocusFlow",
+                                                    title = "Enable Biometric Authentication",
+                                                    subtitle = "Authenticate to enable biometric authentication for FocusFlow",
                                                     negativeButtonText = "Cancel",
                                                     onSuccess = {
                                                         settingsViewModel.toggleBiometric(true)
                                                         settingsViewModel.setBiometricPromptShown(true)
-                                                        // Save credentials if user is logged in
+                                                        // Save credentials for current account
                                                         val currentUser = FirebaseAuth.getInstance().currentUser
-                                                        currentUser?.email?.let { email ->
-                                                            if (credentialManager.isGoogleLogin()) {
-                                                                credentialManager.saveGoogleLogin(email)
+                                                        if (currentUser != null) {
+                                                            currentUser.email?.let { email ->
+                                                                // Check if it's a Google account
+                                                                val isGoogleAccount = currentUser.providerData.any { 
+                                                                    it.providerId == "google.com" 
+                                                                }
+                                                                if (isGoogleAccount) {
+                                                                    credentialManager.saveGoogleLogin(email, currentUser.uid)
+                                                                } else {
+                                                                    // For email/password, try to get saved password
+                                                                    val savedPassword = credentialManager.getSavedPassword(currentUser.uid)
+                                                                    if (savedPassword != null) {
+                                                                        credentialManager.saveCredentials(email, savedPassword, currentUser.uid)
+                                                                    }
+                                                                }
                                                             }
                                                         }
-                                                        Toast.makeText(context, "Biometric login enabled!", Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, "Biometric authentication enabled for this account!", Toast.LENGTH_SHORT).show()
                                                     },
                                                     onError = { error ->
                                                         if (error != "User canceled") {
@@ -379,21 +391,47 @@ fun SettingsScreen(
                     // Regular toggle if already asked or enabled
                     SettingRow(
                         icon = Icons.Default.Fingerprint,
-                        title = "Biometric Login",
+                        title = "Biometric Authentication",
                         checked = biometricEnabled,
                         enabled = isBiometricAvailable,
                         onCheckedChange = { enabled ->
                             if (enabled) {
                                 // User wants to enable biometric - prompt for authentication
                                 if (activity != null && isBiometricAvailable) {
+                                    val currentUser = FirebaseAuth.getInstance().currentUser
+                                    if (currentUser == null) {
+                                        Toast.makeText(context, "Please log in first to enable biometric login", Toast.LENGTH_SHORT).show()
+                                        return@SettingRow
+                                    }
+                                    
                                     biometricHelper.authenticate(
                                         activity = activity,
-                                        title = "Enable Biometric Login",
-                                        subtitle = "Authenticate to enable biometric login for FocusFlow",
+                                        title = "Enable Biometric Authentication",
+                                        subtitle = "Authenticate to enable biometric authentication for this account",
                                         negativeButtonText = "Cancel",
                                         onSuccess = {
                                             settingsViewModel.toggleBiometric(true)
-                                            Toast.makeText(context, "Biometric login enabled", Toast.LENGTH_SHORT).show()
+                                            // Save credentials for current account
+                                            currentUser.email?.let { email ->
+                                                // Check if it's a Google account
+                                                val isGoogleAccount = currentUser.providerData.any { 
+                                                    it.providerId == "google.com" 
+                                                }
+                                                if (isGoogleAccount) {
+                                                    credentialManager.saveGoogleLogin(email, currentUser.uid)
+                                                } else {
+                                                    // For email/password, we need the password
+                                                    // Since we don't have it here, we'll just save the email
+                                                    // The password should have been saved during login
+                                                    val savedPassword = credentialManager.getSavedPassword(currentUser.uid)
+                                                    if (savedPassword != null) {
+                                                        credentialManager.saveCredentials(email, savedPassword, currentUser.uid)
+                                                    } else {
+                                                        Toast.makeText(context, "Please sign in with email/password to save credentials", Toast.LENGTH_LONG).show()
+                                                    }
+                                                }
+                                            }
+                                            Toast.makeText(context, "Biometric authentication enabled for this account", Toast.LENGTH_SHORT).show()
                                         },
                                         onError = { error ->
                                             Toast.makeText(context, "Biometric authentication failed: $error", Toast.LENGTH_SHORT).show()
@@ -406,14 +444,183 @@ fun SettingsScreen(
                                     Toast.makeText(context, "Biometric authentication not available", Toast.LENGTH_SHORT).show()
                                 }
                             } else {
-                                // User wants to disable biometric - clear saved credentials
+                                // User wants to disable biometric - clear saved credentials for current account
                                 settingsViewModel.toggleBiometric(false)
-                                credentialManager.clearCredentials()
-                                Toast.makeText(context, "Biometric login disabled", Toast.LENGTH_SHORT).show()
+                                val currentUser = FirebaseAuth.getInstance().currentUser
+                                currentUser?.uid?.let { userId ->
+                                    credentialManager.clearCredentials(userId)
+                                }
+                                Toast.makeText(context, "Biometric authentication disabled for this account", Toast.LENGTH_SHORT).show()
                             }
                         }
                     )
+                    
+                    // Separate section to register fingerprint for this account
+                    if (biometricEnabled && isBiometricAvailable) {
+                        val currentUserForFingerprint = FirebaseAuth.getInstance().currentUser
+                        val hasRegisteredFingerprint = remember(currentUserForFingerprint?.uid) {
+                            currentUserForFingerprint?.uid?.let { 
+                                credentialManager.hasCredentials(it) 
+                            } ?: false
+                        }
+                        
+                        Spacer(Modifier.height(16.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = colors.primaryContainer.copy(alpha = 0.2f)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        Icons.Default.Fingerprint,
+                                        contentDescription = null,
+                                        tint = colors.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(Modifier.width(12.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            "Register Fingerprint for This Account",
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.primary,
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(
+                                            "Add your fingerprint to enable quick login for this account",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = colors.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.height(12.dp))
+                                
+                                if (hasRegisteredFingerprint) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Icon(
+                                            Icons.Default.CheckCircle,
+                                            contentDescription = null,
+                                            tint = colors.primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            "Fingerprint registered for this account",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = colors.primary,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                }
+                                
+                                Button(
+                                    onClick = {
+                                        val fragmentActivity: FragmentActivity? = when {
+                                            activity != null -> activity
+                                            context is FragmentActivity -> context
+                                            else -> {
+                                                var act: FragmentActivity? = null
+                                                try {
+                                                    if (context is android.app.Activity) {
+                                                        act = context as? FragmentActivity
+                                                    }
+                                                } catch (e: Exception) {
+                                                    // Ignore
+                                                }
+                                                act
+                                            }
+                                        }
+                                        
+                                        if (fragmentActivity != null) {
+                                            if (currentUserForFingerprint == null) {
+                                                Toast.makeText(context, "Please log in first", Toast.LENGTH_SHORT).show()
+                                                return@Button
+                                            }
+                                            
+                                            try {
+                                                biometricHelper.authenticate(
+                                                    activity = fragmentActivity,
+                                                    title = "Register Fingerprint",
+                                                    subtitle = "Authenticate with your fingerprint to register it for this account",
+                                                    negativeButtonText = "Cancel",
+                                                    onSuccess = {
+                                                        // Save credentials for current account
+                                                        var success = false
+                                                        currentUserForFingerprint.email?.let { email ->
+                                                            val isGoogleAccount = currentUserForFingerprint.providerData.any { 
+                                                                it.providerId == "google.com" 
+                                                            }
+                                                            if (isGoogleAccount) {
+                                                                credentialManager.saveGoogleLogin(email, currentUserForFingerprint.uid)
+                                                                success = true
+                                                            } else {
+                                                                // For email/password, try to get saved password
+                                                                val savedPassword = credentialManager.getSavedPassword(currentUserForFingerprint.uid)
+                                                                if (savedPassword != null) {
+                                                                    credentialManager.saveCredentials(email, savedPassword, currentUserForFingerprint.uid)
+                                                                    success = true
+                                                                } else {
+                                                                    Toast.makeText(context, "Please sign in with email/password first to save credentials", Toast.LENGTH_LONG).show()
+                                                                }
+                                                            }
+                                                        }
+                                                        if (success) {
+                                                            Toast.makeText(context, "Fingerprint registered successfully for this account!", Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    },
+                                                    onError = { error ->
+                                                        if (error != "User canceled") {
+                                                            Toast.makeText(context, "Registration failed: $error", Toast.LENGTH_SHORT).show()
+                                                        }
+                                                    },
+                                                    onFailed = {
+                                                        Toast.makeText(context, "Fingerprint registration failed. Please try again.", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                )
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } else {
+                                            Toast.makeText(context, "Unable to access biometric authentication", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colors.primary
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Fingerprint,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    if (hasRegisteredFingerprint) "Re-register Fingerprint" else "Register Fingerprint",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                    }
                 }
+                
                 // Status message and refresh button for when biometrics are not available
                 if (!isBiometricAvailable) {
                     Column(
@@ -435,8 +642,10 @@ fun SettingsScreen(
                         }
                     }
                 }
-                
-                // Language Selector
+            }
+            
+            // Language Selector
+            SettingsCard(title = "Language Settings") {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -608,9 +817,11 @@ fun SettingsScreen(
                 }
 
                 TextButton(onClick = {
+                    val currentUser = auth.currentUser
+                    val userId = currentUser?.uid
                     auth.signOut()
-                    // Clear saved credentials on logout
-                    credentialManager.clearCredentials()
+                    // Clear saved credentials for the logged-out account only
+                    userId?.let { credentialManager.clearCredentials(it) }
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Login) { inclusive = true }
                     }

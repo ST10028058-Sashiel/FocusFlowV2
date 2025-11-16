@@ -78,6 +78,7 @@ fun LoginScreen(navController: NavController) {
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken(context.getString(R.string.default_web_client_id))
         .requestEmail()
+        .requestProfile()
         .build()
     val googleSignInClient: GoogleSignInClient = GoogleSignIn.getClient(context, gso)
 
@@ -87,31 +88,50 @@ fun LoginScreen(navController: NavController) {
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         if (task.isSuccessful) {
             val account = task.result
-            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                        auth.signInWithCredential(credential)
-                .addOnCompleteListener { signInTask ->
-                    if (signInTask.isSuccessful) {
-                        // Save Google login info if biometric is enabled
-                        if (biometricEnabled && isBiometricAvailable) {
-                            account.email?.let { email ->
-                                credentialManager.saveGoogleLogin(email)
+            // Get ID token - handle null case
+            account.idToken?.let { idToken ->
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                auth.signInWithCredential(credential)
+                    .addOnCompleteListener { signInTask ->
+                                    if (signInTask.isSuccessful) {
+                                        // Save Google login info for current account if biometric is enabled
+                                        val currentUser = auth.currentUser
+                                        if (biometricEnabled && isBiometricAvailable && currentUser != null) {
+                                            account.email?.let { email ->
+                                                credentialManager.saveGoogleLogin(email, currentUser.uid)
+                                            }
+                                        }
+                            
+                            // Prompt user to enable biometrics if available but not enabled
+                            if (isBiometricAvailable && !biometricEnabled && !settingsViewModel.hasBeenAskedAboutBiometrics()) {
+                                showBiometricPrompt = true
+                            } else {
+                                Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+                                navController.navigate(Routes.Home) {
+                                    popUpTo(Routes.Login) { inclusive = true }
+                                }
                             }
-                        }
-                        
-                        // Prompt user to enable biometrics if available but not enabled
-                        if (isBiometricAvailable && !biometricEnabled && !settingsViewModel.hasBeenAskedAboutBiometrics()) {
-                            showBiometricPrompt = true
                         } else {
-                            navController.navigate(Routes.Home) {
-                                popUpTo(Routes.Login) { inclusive = true }
-                            }
+                            val errorMessage = signInTask.exception?.message ?: "Google Sign-in failed"
+                            Toast.makeText(context, "Google Sign-in failed: $errorMessage", Toast.LENGTH_LONG).show()
                         }
-                    } else {
-                        Toast.makeText(context, "Google Sign-in failed", Toast.LENGTH_SHORT).show()
                     }
-                }
+            } ?: run {
+                // No ID token - this shouldn't happen, but handle it
+                Toast.makeText(context, "Failed to get authentication token. Please try again.", Toast.LENGTH_SHORT).show()
+            }
         } else {
-            Toast.makeText(context, "Google Sign-in canceled", Toast.LENGTH_SHORT).show()
+            val exception = task.exception
+            if (exception != null) {
+                val errorMessage = when {
+                    exception.message?.contains("12500") == true -> "Google Sign-in canceled"
+                    exception.message?.contains("12501") == true -> "Sign-in was canceled"
+                    else -> "Google Sign-in failed: ${exception.message}"
+                }
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Google Sign-in canceled", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -229,150 +249,6 @@ fun LoginScreen(navController: NavController) {
 
                     Spacer(Modifier.height(16.dp))
 
-                    // Separate Biometric Login Button - Always visible when biometric is enabled
-                    if (biometricEnabled && isBiometricAvailable) {
-                        Button(
-                            onClick = {
-                                if (!credentialManager.hasCredentials()) {
-                                    Toast.makeText(context, "Please sign in with email/password first to save credentials for biometric login", Toast.LENGTH_LONG).show()
-                                    return@Button
-                                }
-                                
-                                val activity = when {
-                                    context is FragmentActivity -> context
-                                    else -> null
-                                }
-                                if (activity != null) {
-                                    isLoading = true
-                                    biometricHelper.authenticate(
-                                        activity = activity,
-                                        title = "Biometric Login",
-                                        subtitle = "Use your fingerprint or face to log in",
-                                        negativeButtonText = "Cancel",
-                                        onSuccess = {
-                                            // Check login type and authenticate accordingly
-                                            if (credentialManager.isGoogleLogin()) {
-                                                // Google SSO user - check if Firebase session still exists
-                                                if (auth.currentUser != null) {
-                                                    // Firebase session exists, navigate to home
-                                                    isLoading = false
-                                                    Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-                                                    navController.navigate(Routes.Home) {
-                                                        popUpTo(Routes.Login) { inclusive = true }
-                                                    }
-                                                } else {
-                                                    // Check if Google Sign-In still has an active session
-                                                    val googleSignInAccount = GoogleSignIn.getLastSignedInAccount(context)
-                                                    if (googleSignInAccount != null && googleSignInAccount.idToken != null) {
-                                                        // Google session exists, re-authenticate with Firebase
-                                                        val credential = GoogleAuthProvider.getCredential(googleSignInAccount.idToken, null)
-                                                        auth.signInWithCredential(credential)
-                                                            .addOnCompleteListener { task ->
-                                                                isLoading = false
-                                                                if (task.isSuccessful) {
-                                                                    Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-                                                                    navController.navigate(Routes.Home) {
-                                                                        popUpTo(Routes.Login) { inclusive = true }
-                                                                    }
-                                                                } else {
-                                                                    Toast.makeText(context, "Session expired. Please sign in with Google again.", Toast.LENGTH_SHORT).show()
-                                                                }
-                                                            }
-                                                    } else {
-                                                        // No active Google session, need to re-authenticate
-                                                        isLoading = false
-                                                        Toast.makeText(context, "Session expired. Please sign in with Google again.", Toast.LENGTH_SHORT).show()
-                                                    }
-                                                }
-                                            } else {
-                                                // Email/password user - use saved credentials to log in
-                                                val savedEmail = credentialManager.getSavedEmail()
-                                                val savedPassword = credentialManager.getSavedPassword()
-                                                
-                                                if (savedEmail != null && savedPassword != null) {
-                                                    auth.signInWithEmailAndPassword(savedEmail, savedPassword)
-                                                        .addOnCompleteListener { task ->
-                                                            isLoading = false
-                                                            if (task.isSuccessful) {
-                                                                Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-                                                                navController.navigate(Routes.Home) {
-                                                                    popUpTo(Routes.Login) { inclusive = true }
-                                                                }
-                                                            } else {
-                                                                Toast.makeText(context, "Login failed. Please try again.", Toast.LENGTH_SHORT).show()
-                                                            }
-                                                        }
-                                                } else {
-                                                    isLoading = false
-                                                    Toast.makeText(context, "No saved credentials found. Please sign in with email/password first.", Toast.LENGTH_LONG).show()
-                                                }
-                                            }
-                                        },
-                                        onError = { error ->
-                                            isLoading = false
-                                            if (error != "User canceled") {
-                                                Toast.makeText(context, "Biometric authentication failed: $error", Toast.LENGTH_SHORT).show()
-                                            }
-                                        },
-                                        onFailed = {
-                                            isLoading = false
-                                            Toast.makeText(context, "Biometric authentication failed", Toast.LENGTH_SHORT).show()
-                                        }
-                                    )
-                                } else {
-                                    Toast.makeText(context, "Unable to access biometric authentication", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A0DAD)),
-                            enabled = !isLoading
-                        ) {
-                            if (isLoading) {
-                                CircularProgressIndicator(
-                                    color = Color.White,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Default.Fingerprint,
-                                    contentDescription = "Fingerprint",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(Modifier.width(12.dp))
-                                Text(
-                                    "Sign In with Biometric",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
-                        
-                        Spacer(Modifier.height(16.dp))
-                        
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Divider(modifier = Modifier.weight(1f), color = Color(0xFFB080E0))
-                            Text(
-                                "OR",
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = Color(0xFFB080E0),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Divider(modifier = Modifier.weight(1f), color = Color(0xFFB080E0))
-                        }
-                        
-                        Spacer(Modifier.height(16.dp))
-                    }
-
                     Button(
                         onClick = {
                             // Clear previous errors
@@ -400,9 +276,10 @@ fun LoginScreen(navController: NavController) {
                                 .addOnCompleteListener { task ->
                                     isLoading = false
                                     if (task.isSuccessful) {
-                                        // Save credentials if biometric is enabled
-                                        if (biometricEnabled && isBiometricAvailable) {
-                                            credentialManager.saveCredentials(email.trim(), password)
+                                        // Save credentials for current account if biometric is enabled
+                                        val currentUser = auth.currentUser
+                                        if (biometricEnabled && isBiometricAvailable && currentUser != null) {
+                                            credentialManager.saveCredentials(email.trim(), password, currentUser.uid)
                                         }
                                         
                                         // Prompt user to enable biometrics if available but not enabled
@@ -458,6 +335,8 @@ fun LoginScreen(navController: NavController) {
 
                     Button(
                         onClick = {
+                            // Launch sign-in intent - Google will show account picker if multiple accounts exist
+                            // This allows users to sign in with any Google account
                             val signInIntent = googleSignInClient.signInIntent
                             launcher.launch(signInIntent)
                         },
@@ -539,19 +418,25 @@ fun LoginScreen(navController: NavController) {
                                     negativeButtonText = "Cancel",
                                     onSuccess = {
                                         settingsViewModel.toggleBiometric(true)
-                                        // Save credentials for biometric login
-                                        val savedEmail = credentialManager.getSavedEmail()
-                                        if (savedEmail != null && !credentialManager.isGoogleLogin()) {
-                                            val savedPassword = credentialManager.getSavedPassword()
-                                            if (savedPassword != null) {
-                                                credentialManager.saveCredentials(savedEmail, savedPassword)
-                                            }
-                                        } else if (savedEmail != null && credentialManager.isGoogleLogin()) {
-                                            credentialManager.saveGoogleLogin(savedEmail)
-                                        } else {
-                                            // Save current login credentials
+                                        // Save credentials for current account
+                                        val currentUser = auth.currentUser
+                                        if (currentUser != null) {
                                             if (email.isNotBlank() && password.isNotBlank()) {
-                                                credentialManager.saveCredentials(email, password)
+                                                credentialManager.saveCredentials(email.trim(), password, currentUser.uid)
+                                            } else {
+                                                // Try to get saved credentials
+                                                val savedEmail = credentialManager.getSavedEmail(currentUser.uid)
+                                                if (savedEmail != null) {
+                                                    val isGoogle = credentialManager.isGoogleLogin(currentUser.uid)
+                                                    if (isGoogle) {
+                                                        credentialManager.saveGoogleLogin(savedEmail, currentUser.uid)
+                                                    } else {
+                                                        val savedPassword = credentialManager.getSavedPassword(currentUser.uid)
+                                                        if (savedPassword != null) {
+                                                            credentialManager.saveCredentials(savedEmail, savedPassword, currentUser.uid)
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                         Toast.makeText(context, "Biometric login enabled!", Toast.LENGTH_SHORT).show()
