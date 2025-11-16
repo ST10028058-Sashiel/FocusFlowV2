@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- App Information -->
+    <string name="app_name">FocusFlowV2</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">FocusFlow</string>
+    <string name="home_subtitle">Hlala uhlelekile, ugxile, futhi ulawula.</string>
+    <string name="total_tasks">Imisebenzi Ephelele</string>
+    <string name="pending_tasks">Kusalinde</string>
+    <string name="completed_tasks">Kuphele</string>
+    <string name="progress_overview">Ukubuka Isinyathelo</string>
+    <string name="tasks_completed">%1$d kwe-%2$d imisebenzi ephelele</string>
+    <string name="about_focusflow">Mayelana ne-FocusFlow</string>
+    <string name="about_description">I-FocusFlow ikusiza ukuthi uhlele usuku lwakho, ulandelele inqubekela phambili, futhi ugcine umfutho. Dala imisebenzi, setha izikhumbuzi, bese ubona okudinga ukunakwa kwakho ngaso leso sikhathi.</string>
+    <string name="motivation">Isisusa</string>
+    <string name="motivation_quote">"Inqubekela phambili encane nsuku zonke ihlanganisa ibe imiphumela emikhulu."</string>
+    <string name="pro_tips">Amathiphu E-Pro</string>
+    <string name="tip_reminders">Sebenzisa izikhumbuzi zemisebenzi ebalulekile ngesikhathi.</string>
+    <string name="tip_priority">Hlela imisebenzi ngokubaluleka ukuze ugxile kangcono.</string>
+    <string name="tip_review">Buyekeza isimo sakho kuthebhu ye-Updates.</string>
+    <string name="made_with_love">Kwenziwe ngo-♥ ngu-FocusFlow</string>
+
+    <!-- Task Screen -->
+    <string name="hey_there">Sawubona 👋</string>
+    <string name="focus_today">Nansi ukugxila kwakho namuhla!</string>
+    <string name="search_tasks">Sesha imisebenzi…</string>
+    <string name="total">Isamba</string>
+    <string name="high">Ephakeme</string>
+    <string name="normal">Okujwayelekile</string>
+    <string name="low">Ephansi</string>
+    <string name="share_all_tasks">Yabelana Nayo Yonke Imisebenzi Esalinde (%1$d)</string>
+    <string name="filter_priority">Hlunga Ngokubaluleka</string>
+    <string name="sort_tasks">Hlela Imisebenzi</string>
+    <string name="all_priorities">Konke</string>
+    <string name="newest_first">Okusha Kuqala</string>
+    <string name="oldest_first">Okudala Kuqala</string>
+    <string name="priority_high_low">Okubalulekile (Ephakeme → Ephansi)</string>
+    <string name="no_tasks_found">🔍 Ayikho imisebenzi etholakele</string>
+    <string name="no_tasks_yet">🌱 Awukakabi namisebenzi</string>
+    <string name="try_different_search">Zama igama lokusesha elihlukile</string>
+    <string name="add_first_task">Chofoza inkinobho ye-+ ukuze wengeze umsebenzi wakho wokuqala!</string>
+    <string name="add_task">Engeza Umsebenzi</string>
+    <string name="priority_label">Okubalulekile: %1$s</string>
+    <string name="location_label">📍 %1$s</string>
+    <string name="time_format">🕒 %1$s → %2$s</string>
+    <string name="edit_task">Hlela Umsebenzi</string>
+    <string name="delete_task">Susa Umsebenzi</string>
+    <string name="share_task">Yabelana Ngomsebenzi</string>
+    <string name="confirm_delete">Qinisekisa Ukususwa</string>
+    <string name="delete_confirmation">Uqinisekile ukuthi ufuna ukususa lo msebenzi?</string>
+    <string name="delete">Susa</string>
+    <string name="cancel">Khansela</string>
+
+    <!-- Add Task Screen -->
+    <string name="add_new_task">Engeza Umsebenzi Omusha</string>
+    <string name="stay_organized">Hlala uhlelekile futhi usebenza kahle 💪</string>
+    <string name="task_title">Isihloko Somsebenzi</string>
+    <string name="priority">Okubalulekile</string>
+    <string name="all_day">Usuku Lonke</string>
+    <string name="select_date">Khetha Usuku</string>
+    <string name="select_start_time">Khetha Isikhathi Sokuqala</string>
+    <string name="select_end_time">Khetha Isikhathi Sokuphela</string>
+    <string name="location_optional">Indawo (okukhethwayo)</string>
+    <string name="pick_location">Khetha Indawo</string>
+    <string name="reminder_minutes">Isikhumbuzi (imizuzu ngaphambi)</string>
+    <string name="add_task_button">Engeza Umsebenzi</string>
+    <string name="update_task_button">Buyekeza Umsebenzi</string>
+    <string name="task_added_success">Umsebenzi wengezwe ngempumelelo</string>
+    <string name="task_saved_success">Umsebenzi ugcinwe ngempumelelo</string>
+    <string name="task_save_failed">Ayikwazanga ukugcina umsebenzi</string>
+    <string name="pick_location_dialog">Khetha Indawo</string>
+    <string name="enter_location_name">Faka igama lendawo</string>
+    <string name="select_common_location">Noma khetha indawo evamile:</string>
+    <string name="location_home">Ikhaya</string>
+    <string name="location_office">Ihhovisi</string>
+    <string name="location_gym">I-Gym</string>
+    <string name="location_restaurant">Indawo Yokudlela</string>
+    <string name="location_park">I-Park</string>
+    <string name="location_school">Isikole</string>
+    <string name="location_hospital">Isibhedlela</string>
+    <string name="location_airport">Isikhumulo Sezindiza</string>
+    <string name="location_hotel">I-Hotel</string>
+    <string name="location_mall">Isitolo Esikhulu</string>
+    <string name="location_library">Umtapo Wolwazi</string>
+    <string name="location_coffee">Isitolo Sekhofi</string>
+    <string name="select">Khetha</string>
+    <string name="back">Emuva</string>
+
+    <!-- Task Status Screen -->
+    <string name="task_status">Isimo Somsebenzi 📋</string>
+    <string name="manage_tasks">Phatha imisebenzi yakho ephelele ne-esalinde</string>
+    <string name="outstanding_tasks">⏳ Imisebenzi Esalinde</string>
+    <string name="completed_tasks_section">✅ Imisebenzi Ephelele</string>
+    <string name="all_caught_up">🎉 Konke kuhle! Ayikho imisebenzi esalinde.</string>
+    <string name="no_completed_tasks">Awukakabi namisebenzi ephelele.</string>
+    <string name="marked_completed">Kumakwe njengokuphele ✅</string>
+    <string name="marked_pending">Kumakwe njengokusalinde ⏳</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Izilungiselelo</string>
+    <string name="dark_mode">Imodi Emnyama</string>
+    <string name="biometric_login">Ukungena Nge-Biometric</string>
+    <string name="biometric_not_available">Ukungena nge-biometric akutholakali</string>
+    <string name="refresh_status">Buyekeza Isimo</string>
+    <string name="language">Ulimi</string>
+    <string name="select_language">Khetha Ulimi</string>
+    <string name="language_english">IsiNgisi</string>
+    <string name="language_afrikaans">IsiBhunu</string>
+    <string name="language_zulu">isiZulu</string>
+    <string name="logout_button">Phuma</string>
+
+    <!-- Login/Register -->
+    <string name="login_button">Ngena</string>
+    <string name="register_button">Dala I-Akhawunti</string>
+    <string name="email">I-imeyili</string>
+    <string name="password">Iphasiwedi</string>
+    <string name="sign_in_with_google">Ngena nge-Google</string>
+    <string name="sign_in_with_biometric">Ngena Nge-Biometric</string>
+    <string name="register">Bhalisa</string>
+    <string name="already_have_account">Sekuyinakho i-akhawunti? Ngena</string>
+    <string name="dont_have_account">Awunayo i-akhawunti? Bhalisa</string>
+
+    <!-- Notifications -->
+    <string name="task_added_notification">✅ Umsebenzi Wengezwe Ngempumelelo!</string>
+    <string name="task_added_body">Umsebenzi wakho \"%1$s\" wengezwe ngempumelelo.\nOkubalulekile: %2$s</string>
+    <string name="task_reminder">🔔 Isikhumbuzi Somsebenzi</string>
+    <string name="task_reminder_location">%1$s\n📍 Indawo: %2$s</string>
+
+    <!-- Common -->
+    <string name="ok">Kulungile</string>
+    <string name="yes">Yebo</string>
+    <string name="no">Cha</string>
+
+</resources>
+

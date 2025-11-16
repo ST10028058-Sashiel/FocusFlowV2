@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- App Information -->
+    <string name="app_name">FocusFlowV2</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">FocusFlow</string>
+    <string name="home_subtitle">Bly georganiseer, gefokus en in beheer.</string>
+    <string name="total_tasks">Totale Take</string>
+    <string name="pending_tasks">Hangend</string>
+    <string name="completed_tasks">Voltooi</string>
+    <string name="progress_overview">Vordering Oorsig</string>
+    <string name="tasks_completed">%1$d van %2$d take voltooi</string>
+    <string name="about_focusflow">Oor FocusFlow</string>
+    <string name="about_description">FocusFlow help jou om jou dag te beplan, vordering te volg en momentum te behou. Skep take, stel herinnerings en sien wat jou aandag nodig het op \'n oogopslag.</string>
+    <string name="motivation">Motivering</string>
+    <string name="motivation_quote">"Klein vordering elke dag tel op tot groot resultate."</string>
+    <string name="pro_tips">Pro Wenke</string>
+    <string name="tip_reminders">Gebruik herinnerings vir tydgevoelige take.</string>
+    <string name="tip_priority">Groepeer take volgens prioriteit om beter te fokus.</string>
+    <string name="tip_review">Hersien jou status in die Opdaterings oortjie.</string>
+    <string name="made_with_love">Gemaak met ♥ deur FocusFlow</string>
+
+    <!-- Task Screen -->
+    <string name="hey_there">Hallo daar 👋</string>
+    <string name="focus_today">Hier is jou fokus vir vandag!</string>
+    <string name="search_tasks">Soek take…</string>
+    <string name="total">Totaal</string>
+    <string name="high">Hoog</string>
+    <string name="normal">Normaal</string>
+    <string name="low">Laag</string>
+    <string name="share_all_tasks">Deel Alle Uitstaande Take (%1$d)</string>
+    <string name="filter_priority">Filter volgens Prioriteit</string>
+    <string name="sort_tasks">Sorteer Take</string>
+    <string name="all_priorities">Almal</string>
+    <string name="newest_first">Nuutste Eerste</string>
+    <string name="oldest_first">Oudste Eerste</string>
+    <string name="priority_high_low">Prioriteit (Hoog → Laag)</string>
+    <string name="no_tasks_found">🔍 Geen take gevind nie</string>
+    <string name="no_tasks_yet">🌱 Nog geen take nie</string>
+    <string name="try_different_search">Probeer \'n ander soekterm</string>
+    <string name="add_first_task">Klik op die + knoppie om jou eerste taak by te voeg!</string>
+    <string name="add_task">Voeg Taak By</string>
+    <string name="priority_label">Prioriteit: %1$s</string>
+    <string name="location_label">📍 %1$s</string>
+    <string name="time_format">🕒 %1$s → %2$s</string>
+    <string name="edit_task">Wysig Taak</string>
+    <string name="delete_task">Skrap Taak</string>
+    <string name="share_task">Deel Taak</string>
+    <string name="confirm_delete">Bevestig Skrapping</string>
+    <string name="delete_confirmation">Is jy seker jy wil hierdie taak skrap?</string>
+    <string name="delete">Skrap</string>
+    <string name="cancel">Kanselleer</string>
+
+    <!-- Add Task Screen -->
+    <string name="add_new_task">Voeg Nuwe Taak By</string>
+    <string name="stay_organized">Bly georganiseer en produktief 💪</string>
+    <string name="task_title">Taak Titel</string>
+    <string name="priority">Prioriteit</string>
+    <string name="all_day">Heeldag</string>
+    <string name="select_date">Kies Datum</string>
+    <string name="select_start_time">Kies Begin Tyd</string>
+    <string name="select_end_time">Kies Eind Tyd</string>
+    <string name="location_optional">Ligging (opsioneel)</string>
+    <string name="pick_location">Kies Ligging</string>
+    <string name="reminder_minutes">Herinnering (minute voor)</string>
+    <string name="add_task_button">Voeg Taak By</string>
+    <string name="update_task_button">Opdateer Taak</string>
+    <string name="task_added_success">Taak suksesvol bygevoeg</string>
+    <string name="task_saved_success">Taak suksesvol gestoor</string>
+    <string name="task_save_failed">Kon nie taak stoor nie</string>
+    <string name="pick_location_dialog">Kies Ligging</string>
+    <string name="enter_location_name">Voer ligging naam in</string>
+    <string name="select_common_location">Of kies \'n algemene ligging:</string>
+    <string name="location_home">Tuis</string>
+    <string name="location_office">Kantoor</string>
+    <string name="location_gym">Gimnasium</string>
+    <string name="location_restaurant">Restaurant</string>
+    <string name="location_park">Park</string>
+    <string name="location_school">Skool</string>
+    <string name="location_hospital">Hospitaal</string>
+    <string name="location_airport">Lughawe</string>
+    <string name="location_hotel">Hotel</string>
+    <string name="location_mall">Winkelsentrum</string>
+    <string name="location_library">Biblioteek</string>
+    <string name="location_coffee">Koffiewinkel</string>
+    <string name="select">Kies</string>
+    <string name="back">Terug</string>
+
+    <!-- Task Status Screen -->
+    <string name="task_status">Taak Status 📋</string>
+    <string name="manage_tasks">Bestuur jou voltooide en hangende take</string>
+    <string name="outstanding_tasks">⏳ Uitstaande Take</string>
+    <string name="completed_tasks_section">✅ Voltooide Take</string>
+    <string name="all_caught_up">🎉 Alles bygewerk! Geen uitstaande take nie.</string>
+    <string name="no_completed_tasks">Nog geen take voltooi nie.</string>
+    <string name="marked_completed">Gemarkeer as voltooi ✅</string>
+    <string name="marked_pending">Gemarkeer as hangend ⏳</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Instellings</string>
+    <string name="dark_mode">Donker Modus</string>
+    <string name="biometric_login">Biometriese Aanmelding</string>
+    <string name="biometric_not_available">Biometriese aanmelding nie beskikbaar nie</string>
+    <string name="refresh_status">Verfris Status</string>
+    <string name="language">Taal</string>
+    <string name="select_language">Kies Taal</string>
+    <string name="language_english">Engels</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="language_zulu">isiZulu</string>
+    <string name="logout_button">Teken Uit</string>
+
+    <!-- Login/Register -->
+    <string name="login_button">Teken In</string>
+    <string name="register_button">Skep Rekening</string>
+    <string name="email">E-pos</string>
+    <string name="password">Wagwoord</string>
+    <string name="sign_in_with_google">Teken in met Google</string>
+    <string name="sign_in_with_biometric">Teken In met Biometries</string>
+    <string name="register">Registreer</string>
+    <string name="already_have_account">Het jy reeds \'n rekening? Teken In</string>
+    <string name="dont_have_account">Het jy nie \'n rekening nie? Registreer</string>
+
+    <!-- Notifications -->
+    <string name="task_added_notification">✅ Taak Suksesvol Bygevoeg!</string>
+    <string name="task_added_body">Jou taak \"%1$s\" is suksesvol bygevoeg.\nPrioriteit: %2$s</string>
+    <string name="task_reminder">🔔 Taak Herinnering</string>
+    <string name="task_reminder_location">%1$s\n📍 Ligging: %2$s</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nee</string>
+
+</resources>
+
