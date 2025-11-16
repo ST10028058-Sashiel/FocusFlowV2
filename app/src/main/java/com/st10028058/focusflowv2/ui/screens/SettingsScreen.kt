@@ -54,11 +54,12 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val darkModeEnabled by settingsViewModel.darkMode.collectAsState()
+    val themeMode by settingsViewModel.themeMode.collectAsState()
     val biometricEnabled by settingsViewModel.biometricEnabled.collectAsState()
     val selectedLanguage by settingsViewModel.language.collectAsState()
     var notificationsEnabled by remember { mutableStateOf(true) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
 
     val biometricHelper = remember { BiometricHelper(context) }
     val credentialManager = remember { CredentialManager(context) }
@@ -113,12 +114,106 @@ fun SettingsScreen(
 
             // 🌗 App Preferences
             SettingsCard(title = "App Preferences") {
-                SettingRow(
-                    icon = Icons.Default.DarkMode,
-                    title = "Dark Mode",
-                    checked = darkModeEnabled,
-                    onCheckedChange = { settingsViewModel.toggleDarkMode(it) }
-                )
+                // Enhanced Theme Mode Selector
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.DarkMode,
+                            contentDescription = null,
+                            tint = colors.primary
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                "Theme",
+                                fontWeight = FontWeight.Medium,
+                                color = colors.onSurface,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Text(
+                                when (themeMode) {
+                                    com.st10028058.focusflowv2.viewmodel.ThemeMode.SYSTEM -> "Follow system"
+                                    com.st10028058.focusflowv2.viewmodel.ThemeMode.LIGHT -> "Light mode"
+                                    com.st10028058.focusflowv2.viewmodel.ThemeMode.DARK -> "Dark mode"
+                                },
+                                color = colors.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                    IconButton(
+                        onClick = { showThemeDialog = true },
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowForward,
+                            contentDescription = "Change theme",
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                
+                // Theme Selection Dialog
+                if (showThemeDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showThemeDialog = false },
+                        title = {
+                            Text(
+                                "Choose Theme",
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        },
+                        text = {
+                            Column {
+                                ThemeOption(
+                                    title = "Follow System",
+                                    description = "Match device theme",
+                                    icon = Icons.Default.Settings,
+                                    selected = themeMode == com.st10028058.focusflowv2.viewmodel.ThemeMode.SYSTEM,
+                                    onClick = {
+                                        settingsViewModel.setThemeMode(com.st10028058.focusflowv2.viewmodel.ThemeMode.SYSTEM)
+                                        showThemeDialog = false
+                                    }
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                ThemeOption(
+                                    title = "Light Mode",
+                                    description = "Always use light theme",
+                                    icon = Icons.Default.WbSunny,
+                                    selected = themeMode == com.st10028058.focusflowv2.viewmodel.ThemeMode.LIGHT,
+                                    onClick = {
+                                        settingsViewModel.setThemeMode(com.st10028058.focusflowv2.viewmodel.ThemeMode.LIGHT)
+                                        showThemeDialog = false
+                                    }
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                ThemeOption(
+                                    title = "Dark Mode",
+                                    description = "Always use dark theme",
+                                    icon = Icons.Default.DarkMode,
+                                    selected = themeMode == com.st10028058.focusflowv2.viewmodel.ThemeMode.DARK,
+                                    onClick = {
+                                        settingsViewModel.setThemeMode(com.st10028058.focusflowv2.viewmodel.ThemeMode.DARK)
+                                        showThemeDialog = false
+                                    }
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showThemeDialog = false }) {
+                                Text("Close")
+                            }
+                        }
+                    )
+                }
                 SettingRow(
                     icon = Icons.Default.Notifications,
                     title = "Notifications",
@@ -442,6 +537,76 @@ fun SettingRow(
                 uncheckedTrackColor = colors.surfaceVariant
             )
         )
+    }
+}
+
+@Composable
+fun ThemeOption(
+    title: String,
+    description: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    val backgroundColor = if (selected) {
+        colors.primaryContainer
+    } else {
+        colors.surfaceVariant.copy(alpha = 0.3f)
+    }
+    val interactionSource = remember { MutableInteractionSource() }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor,
+            contentColor = colors.onSurface
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (selected) 4.dp else 0.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = onClick,
+                    indication = null,
+                    interactionSource = interactionSource
+                )
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = if (selected) colors.primary else colors.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    title,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (selected) colors.primary else colors.onSurface,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    description,
+                    color = colors.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            if (selected) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Selected",
+                    tint = colors.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
     }
 }
 

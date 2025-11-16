@@ -49,7 +49,18 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val settingsViewModel: SettingsViewModel = viewModel()
-            val isDarkMode by settingsViewModel.darkMode.collectAsState()
+            val themeMode by settingsViewModel.themeMode.collectAsState()
+            
+            // Determine if dark theme should be used
+            val isDarkMode = when (themeMode) {
+                com.st10028058.focusflowv2.viewmodel.ThemeMode.DARK -> true
+                com.st10028058.focusflowv2.viewmodel.ThemeMode.LIGHT -> false
+                com.st10028058.focusflowv2.viewmodel.ThemeMode.SYSTEM -> {
+                    val nightModeFlags = resources.configuration.uiMode and
+                            android.content.res.Configuration.UI_MODE_NIGHT_MASK
+                    nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES
+                }
+            }
 
             FocusFlowV2Theme(darkTheme = isDarkMode) {
                 val navController = rememberNavController()

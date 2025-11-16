@@ -56,12 +56,27 @@ fun AddTaskScreen(
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
+    // Initialize with current date and time
+    val now = Calendar.getInstance()
+    val todayAtMidnight = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    val currentTime = now.timeInMillis
+    val oneHourLater = Calendar.getInstance().apply {
+        add(Calendar.HOUR_OF_DAY, 1)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+
     var title by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf("Normal") }
     var allDay by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableStateOf<Long?>(null) }
-    var startTime by remember { mutableStateOf<Long?>(null) }
-    var endTime by remember { mutableStateOf<Long?>(null) }
+    var selectedDate by remember { mutableStateOf<Long?>(todayAtMidnight.timeInMillis) }
+    var startTime by remember { mutableStateOf<Long?>(currentTime) }
+    var endTime by remember { mutableStateOf<Long?>(oneHourLater) }
     var reminderOffset by remember { mutableStateOf(10) }
     var location by remember { mutableStateOf("") }
     var showLocationDialog by remember { mutableStateOf(false) }
@@ -333,16 +348,21 @@ fun AddTaskScreen(
                                 label = "Date Chosen:",
                                 value = dateFormat.format(Date(selectedDate!!)),
                                 onChangeClick = {
-                                    val now = Calendar.getInstance()
+                                    val selectedCal = Calendar.getInstance().apply {
+                                        timeInMillis = selectedDate!!
+                                    }
                                     DatePickerDialog(
                                         context,
                                         { _, year, month, day ->
-                                            calendar.set(year, month, day, 0, 0)
-                                            selectedDate = calendar.timeInMillis
+                                            val updatedCal = Calendar.getInstance().apply {
+                                                set(year, month, day, 0, 0, 0)
+                                                set(Calendar.MILLISECOND, 0)
+                                            }
+                                            selectedDate = updatedCal.timeInMillis
                                         },
-                                        now.get(Calendar.YEAR),
-                                        now.get(Calendar.MONTH),
-                                        now.get(Calendar.DAY_OF_MONTH)
+                                        selectedCal.get(Calendar.YEAR),
+                                        selectedCal.get(Calendar.MONTH),
+                                        selectedCal.get(Calendar.DAY_OF_MONTH)
                                     ).show()
                                 }
                             )
@@ -351,15 +371,21 @@ fun AddTaskScreen(
                         if (!allDay) {
                             if (startTime == null) {
                                 StyledActionButton("Select Start Time", colors.primary) {
+                                    val now = Calendar.getInstance()
                                     TimePickerDialog(
                                         context,
                                         { _, hour, minute ->
-                                            calendar.set(Calendar.HOUR_OF_DAY, hour)
-                                            calendar.set(Calendar.MINUTE, minute)
-                                            startTime = calendar.timeInMillis
+                                            val updatedCal = Calendar.getInstance().apply {
+                                                timeInMillis = selectedDate ?: System.currentTimeMillis()
+                                                set(Calendar.HOUR_OF_DAY, hour)
+                                                set(Calendar.MINUTE, minute)
+                                                set(Calendar.SECOND, 0)
+                                                set(Calendar.MILLISECOND, 0)
+                                            }
+                                            startTime = updatedCal.timeInMillis
                                         },
-                                        calendar.get(Calendar.HOUR_OF_DAY),
-                                        calendar.get(Calendar.MINUTE),
+                                        now.get(Calendar.HOUR_OF_DAY),
+                                        now.get(Calendar.MINUTE),
                                         true
                                     ).show()
                                 }
@@ -368,15 +394,23 @@ fun AddTaskScreen(
                                     label = "Start Time:",
                                     value = timeFormat.format(Date(startTime!!)),
                                     onChangeClick = {
+                                        val startCal = Calendar.getInstance().apply {
+                                            timeInMillis = startTime!!
+                                        }
                                         TimePickerDialog(
                                             context,
                                             { _, hour, minute ->
-                                                calendar.set(Calendar.HOUR_OF_DAY, hour)
-                                                calendar.set(Calendar.MINUTE, minute)
-                                                startTime = calendar.timeInMillis
+                                                val updatedCal = Calendar.getInstance().apply {
+                                                    timeInMillis = selectedDate ?: System.currentTimeMillis()
+                                                    set(Calendar.HOUR_OF_DAY, hour)
+                                                    set(Calendar.MINUTE, minute)
+                                                    set(Calendar.SECOND, 0)
+                                                    set(Calendar.MILLISECOND, 0)
+                                                }
+                                                startTime = updatedCal.timeInMillis
                                             },
-                                            calendar.get(Calendar.HOUR_OF_DAY),
-                                            calendar.get(Calendar.MINUTE),
+                                            startCal.get(Calendar.HOUR_OF_DAY),
+                                            startCal.get(Calendar.MINUTE),
                                             true
                                         ).show()
                                     }
@@ -385,15 +419,26 @@ fun AddTaskScreen(
 
                             if (endTime == null) {
                                 StyledActionButton("Select End Time", colors.primary) {
+                                    val now = Calendar.getInstance()
+                                    val defaultHour = if (startTime != null) {
+                                        Calendar.getInstance().apply { timeInMillis = startTime!! }.get(Calendar.HOUR_OF_DAY) + 1
+                                    } else {
+                                        now.get(Calendar.HOUR_OF_DAY) + 1
+                                    }
                                     TimePickerDialog(
                                         context,
                                         { _, hour, minute ->
-                                            calendar.set(Calendar.HOUR_OF_DAY, hour)
-                                            calendar.set(Calendar.MINUTE, minute)
-                                            endTime = calendar.timeInMillis
+                                            val updatedCal = Calendar.getInstance().apply {
+                                                timeInMillis = selectedDate ?: System.currentTimeMillis()
+                                                set(Calendar.HOUR_OF_DAY, hour)
+                                                set(Calendar.MINUTE, minute)
+                                                set(Calendar.SECOND, 0)
+                                                set(Calendar.MILLISECOND, 0)
+                                            }
+                                            endTime = updatedCal.timeInMillis
                                         },
-                                        calendar.get(Calendar.HOUR_OF_DAY),
-                                        calendar.get(Calendar.MINUTE),
+                                        defaultHour,
+                                        now.get(Calendar.MINUTE),
                                         true
                                     ).show()
                                 }
@@ -402,15 +447,23 @@ fun AddTaskScreen(
                                     label = "End Time:",
                                     value = timeFormat.format(Date(endTime!!)),
                                     onChangeClick = {
+                                        val endCal = Calendar.getInstance().apply {
+                                            timeInMillis = endTime!!
+                                        }
                                         TimePickerDialog(
                                             context,
                                             { _, hour, minute ->
-                                                calendar.set(Calendar.HOUR_OF_DAY, hour)
-                                                calendar.set(Calendar.MINUTE, minute)
-                                                endTime = calendar.timeInMillis
+                                                val updatedCal = Calendar.getInstance().apply {
+                                                    timeInMillis = selectedDate ?: System.currentTimeMillis()
+                                                    set(Calendar.HOUR_OF_DAY, hour)
+                                                    set(Calendar.MINUTE, minute)
+                                                    set(Calendar.SECOND, 0)
+                                                    set(Calendar.MILLISECOND, 0)
+                                                }
+                                                endTime = updatedCal.timeInMillis
                                             },
-                                            calendar.get(Calendar.HOUR_OF_DAY),
-                                            calendar.get(Calendar.MINUTE),
+                                            endCal.get(Calendar.HOUR_OF_DAY),
+                                            endCal.get(Calendar.MINUTE),
                                             true
                                         ).show()
                                     }
