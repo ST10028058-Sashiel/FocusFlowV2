@@ -1,6 +1,7 @@
 package com.st10028058.focusflowv2
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -12,14 +13,23 @@ import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.st10028058.focusflowv2.notifications.TaskNotificationManager
 import com.st10028058.focusflowv2.ui.nav.AppNavigation
 import com.st10028058.focusflowv2.ui.theme.FocusFlowV2Theme
+import com.st10028058.focusflowv2.utils.LocaleHelper
 import com.st10028058.focusflowv2.viewmodel.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
 
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.attachBaseContext(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 🔔 Initialize notification channels
+        TaskNotificationManager.createNotificationChannels(this)
 
         // 🔔 Request POST_NOTIFICATIONS permission on Android 13+
         val requestPermissionLauncher =

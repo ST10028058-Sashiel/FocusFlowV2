@@ -7,12 +7,137 @@
     <!-- Google Sign-In -->
     <string name="default_web_client_id">906573757921-kcv3rovpjacjalrun5v8tlrh3ms27jal.apps.googleusercontent.com</string>
 
-    <!-- Optional: Splash & UI Labels -->
+    <!-- Splash & UI Labels -->
     <string name="splash_title">Welcome to FocusFlow</string>
     <string name="splash_subtitle">Stay organized. Stay focused.</string>
     <string name="login_button">Sign In</string>
     <string name="register_button">Create Account</string>
     <string name="logout_button">Log Out</string>
     <string name="settings_title">Settings</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">FocusFlow</string>
+    <string name="home_subtitle">Stay organized, focused, and in control.</string>
+    <string name="total_tasks">Total Tasks</string>
+    <string name="pending_tasks">Pending</string>
+    <string name="completed_tasks">Completed</string>
+    <string name="progress_overview">Progress Overview</string>
+    <string name="tasks_completed">%1$d of %2$d tasks completed</string>
+    <string name="about_focusflow">About FocusFlow</string>
+    <string name="about_description">FocusFlow helps you plan your day, track progress, and keep momentum. Create tasks, set reminders, and see what needs your attention at a glance.</string>
+    <string name="motivation">Motivation</string>
+    <string name="motivation_quote">"Small progress each day adds up to big results."</string>
+    <string name="pro_tips">Pro Tips</string>
+    <string name="tip_reminders">Use reminders for time-sensitive tasks.</string>
+    <string name="tip_priority">Group tasks by priority to focus better.</string>
+    <string name="tip_review">Review your status in the Updates tab.</string>
+    <string name="made_with_love">Made with ♥ by FocusFlow</string>
+
+    <!-- Task Screen -->
+    <string name="hey_there">Hey there 👋</string>
+    <string name="focus_today">Here\'s your focus for today!</string>
+    <string name="search_tasks">Search tasks…</string>
+    <string name="total">Total</string>
+    <string name="high">High</string>
+    <string name="normal">Normal</string>
+    <string name="low">Low</string>
+    <string name="share_all_tasks">Share All Outstanding Tasks (%1$d)</string>
+    <string name="filter_priority">Filter by Priority</string>
+    <string name="sort_tasks">Sort Tasks</string>
+    <string name="all_priorities">All</string>
+    <string name="newest_first">Newest First</string>
+    <string name="oldest_first">Oldest First</string>
+    <string name="priority_high_low">Priority (High → Low)</string>
+    <string name="no_tasks_found">🔍 No tasks found</string>
+    <string name="no_tasks_yet">🌱 No tasks yet</string>
+    <string name="try_different_search">Try a different search term</string>
+    <string name="add_first_task">Tap the + button to add your first task!</string>
+    <string name="add_task">Add Task</string>
+    <string name="priority_label">Priority: %1$s</string>
+    <string name="location_label">📍 %1$s</string>
+    <string name="time_format">🕒 %1$s → %2$s</string>
+    <string name="edit_task">Edit Task</string>
+    <string name="delete_task">Delete Task</string>
+    <string name="share_task">Share Task</string>
+    <string name="confirm_delete">Confirm Deletion</string>
+    <string name="delete_confirmation">Are you sure you want to delete this task?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Add Task Screen -->
+    <string name="add_new_task">Add New Task</string>
+    <string name="stay_organized">Stay organized and productive 💪</string>
+    <string name="task_title">Task Title</string>
+    <string name="priority">Priority</string>
+    <string name="all_day">All Day</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_start_time">Select Start Time</string>
+    <string name="select_end_time">Select End Time</string>
+    <string name="location_optional">Location (optional)</string>
+    <string name="pick_location">Pick Location</string>
+    <string name="reminder_minutes">Reminder (minutes before)</string>
+    <string name="add_task_button">Add Task</string>
+    <string name="update_task_button">Update Task</string>
+    <string name="task_added_success">Task added successfully</string>
+    <string name="task_saved_success">Task saved successfully</string>
+    <string name="task_save_failed">Failed to save task</string>
+    <string name="pick_location_dialog">Pick Location</string>
+    <string name="enter_location_name">Enter location name</string>
+    <string name="select_common_location">Or select a common location:</string>
+    <string name="location_home">Home</string>
+    <string name="location_office">Office</string>
+    <string name="location_gym">Gym</string>
+    <string name="location_restaurant">Restaurant</string>
+    <string name="location_park">Park</string>
+    <string name="location_school">School</string>
+    <string name="location_hospital">Hospital</string>
+    <string name="location_airport">Airport</string>
+    <string name="location_hotel">Hotel</string>
+    <string name="location_mall">Shopping Mall</string>
+    <string name="location_library">Library</string>
+    <string name="location_coffee">Coffee Shop</string>
+    <string name="select">Select</string>
+    <string name="back">Back</string>
+
+    <!-- Task Status Screen -->
+    <string name="task_status">Task Status 📋</string>
+    <string name="manage_tasks">Manage your completed and pending tasks</string>
+    <string name="outstanding_tasks">⏳ Outstanding Tasks</string>
+    <string name="completed_tasks_section">✅ Completed Tasks</string>
+    <string name="all_caught_up">🎉 All caught up! No outstanding tasks.</string>
+    <string name="no_completed_tasks">No tasks completed yet.</string>
+    <string name="marked_completed">Marked as completed ✅</string>
+    <string name="marked_pending">Marked as pending ⏳</string>
+
+    <!-- Settings Screen -->
+    <string name="dark_mode">Dark Mode</string>
+    <string name="biometric_login">Biometric Login</string>
+    <string name="biometric_not_available">Biometric login not available</string>
+    <string name="refresh_status">Refresh Status</string>
+    <string name="language">Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="language_english">English</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="language_zulu">isiZulu</string>
+
+    <!-- Login/Register -->
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="sign_in_with_biometric">Sign In with Biometric</string>
+    <string name="register">Register</string>
+    <string name="already_have_account">Already have an account? Sign In</string>
+    <string name="dont_have_account">Don\'t have an account? Register</string>
+
+    <!-- Notifications -->
+    <string name="task_added_notification">✅ Task Added Successfully!</string>
+    <string name="task_added_body">Your task \"%1$s\" has been added successfully.\nPriority: %2$s</string>
+    <string name="task_reminder">🔔 Task Reminder</string>
+    <string name="task_reminder_location">%1$s\n📍 Location: %2$s</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
 </resources>

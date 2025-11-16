@@ -13,8 +13,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _darkMode = MutableStateFlow(prefs.getBoolean("darkMode", false))
     val darkMode: StateFlow<Boolean> = _darkMode
 
+    private val _biometricEnabled = MutableStateFlow(prefs.getBoolean("biometricEnabled", false))
+    val biometricEnabled: StateFlow<Boolean> = _biometricEnabled
+
+    private val _language = MutableStateFlow(prefs.getString("language", "en") ?: "en")
+    val language: StateFlow<String> = _language
+
     fun toggleDarkMode(enabled: Boolean) {
         _darkMode.value = enabled
         prefs.edit().putBoolean("darkMode", enabled).apply()
+    }
+
+    fun toggleBiometric(enabled: Boolean) {
+        _biometricEnabled.value = enabled
+        prefs.edit().putBoolean("biometricEnabled", enabled).apply()
+    }
+
+    fun setLanguage(languageCode: String) {
+        _language.value = languageCode
+        prefs.edit().putString("language", languageCode).apply()
     }
 }

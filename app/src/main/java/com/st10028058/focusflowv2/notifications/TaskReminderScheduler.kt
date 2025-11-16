@@ -39,6 +39,7 @@ object TaskReminderScheduler {
         // 🔔 Schedule exact alarm
         val alarmIntent = Intent(context, TaskReminderReceiver::class.java).apply {
             putExtra("task_title", task.title)
+            task.location?.let { putExtra("task_location", it) }
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,

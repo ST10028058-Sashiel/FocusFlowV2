@@ -6,13 +6,17 @@ import android.net.Uri
 import android.os.Environment
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.shadow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
+import com.st10028058.focusflowv2.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,8 +27,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
+import androidx.fragment.app.FragmentActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.st10028058.focusflowv2.data.BiometricHelper
+import com.st10028058.focusflowv2.data.CredentialManager
 import com.st10028058.focusflowv2.ui.nav.Routes
+import com.st10028058.focusflowv2.utils.LocaleHelper
 import com.st10028058.focusflowv2.viewmodel.SettingsViewModel
 import com.st10028058.focusflowv2.viewmodel.TaskViewModel
 import kotlinx.coroutines.Dispatchers
@@ -47,7 +55,16 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
 
     val darkModeEnabled by settingsViewModel.darkMode.collectAsState()
+    val biometricEnabled by settingsViewModel.biometricEnabled.collectAsState()
+    val selectedLanguage by settingsViewModel.language.collectAsState()
     var notificationsEnabled by remember { mutableStateOf(true) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+
+    val biometricHelper = remember { BiometricHelper(context) }
+    val credentialManager = remember { CredentialManager(context) }
+    // Check availability - use state so we can refresh it
+    var isBiometricAvailable by remember { mutableStateOf(biometricHelper.isBiometricAvailable()) }
+    var biometricStatusMessage by remember { mutableStateOf(biometricHelper.getBiometricStatus()) }
 
     val colors = MaterialTheme.colorScheme
 
@@ -108,6 +125,187 @@ fun SettingsScreen(
                     checked = notificationsEnabled,
                     onCheckedChange = { notificationsEnabled = it }
                 )
+                SettingRow(
+                    icon = Icons.Default.Fingerprint,
+                    title = "Biometric Login",
+                    checked = biometricEnabled,
+                    enabled = isBiometricAvailable,
+                    onCheckedChange = { enabled ->
+                        if (enabled) {
+                            // User wants to enable biometric - prompt for authentication
+                            val activity = context as? FragmentActivity
+                            if (activity != null && isBiometricAvailable) {
+                                biometricHelper.authenticate(
+                                    activity = activity,
+                                    title = "Enable Biometric Login",
+                                    subtitle = "Authenticate to enable biometric login for FocusFlow",
+                                    negativeButtonText = "Cancel",
+                                    onSuccess = {
+                                        settingsViewModel.toggleBiometric(true)
+                                        Toast.makeText(context, "Biometric login enabled", Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { error ->
+                                        Toast.makeText(context, "Biometric authentication failed: $error", Toast.LENGTH_SHORT).show()
+                                    },
+                                    onFailed = {
+                                        Toast.makeText(context, "Biometric authentication failed", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            } else {
+                                Toast.makeText(context, "Biometric authentication not available", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            // User wants to disable biometric - clear saved credentials
+                            settingsViewModel.toggleBiometric(false)
+                            credentialManager.clearCredentials()
+                            Toast.makeText(context, "Biometric login disabled", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+                if (!isBiometricAvailable) {
+                    Column(
+                        modifier = Modifier.padding(start = 40.dp, top = 4.dp)
+                    ) {
+                        Text(
+                            text = "Status: $biometricStatusMessage",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.error
+                        )
+                        TextButton(
+                            onClick = {
+                                // Refresh biometric status
+                                isBiometricAvailable = biometricHelper.isBiometricAvailable()
+                                biometricStatusMessage = biometricHelper.getBiometricStatus()
+                            },
+                            modifier = Modifier.padding(top = 4.dp)
+                        ) {
+                            Text(
+                                text = context.getString(R.string.refresh_status),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.primary
+                            )
+                        }
+                    }
+                }
+                
+                // Language Selector
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Language,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = context.getString(R.string.language),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = colors.onSurface
+                        )
+                        Text(
+                            text = when (selectedLanguage) {
+                                "af" -> context.getString(R.string.language_afrikaans)
+                                "zu" -> context.getString(R.string.language_zulu)
+                                else -> context.getString(R.string.language_english)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                    TextButton(onClick = { showLanguageDialog = true }) {
+                        Text(
+                            text = context.getString(R.string.select_language),
+                            color = colors.primary
+                        )
+                    }
+                }
+            }
+            
+            // Language Selection Dialog
+            if (showLanguageDialog) {
+                AlertDialog(
+                    onDismissRequest = { showLanguageDialog = false },
+                    title = { Text(context.getString(R.string.select_language)) },
+                    text = {
+                        Column {
+                            val languages = listOf(
+                                "en" to context.getString(R.string.language_english),
+                                "af" to context.getString(R.string.language_afrikaans),
+                                "zu" to context.getString(R.string.language_zulu)
+                            )
+                            languages.forEach { (code, name) ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = selectedLanguage == code,
+                                        onClick = {
+                                            settingsViewModel.setLanguage(code)
+                                            LocaleHelper.setLocale(context, code)
+                                            showLanguageDialog = false
+                                            (context as? android.app.Activity)?.recreate()
+                                        }
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        text = name,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clickable(
+                                                indication = null,
+                                                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                                            ) {
+                                                settingsViewModel.setLanguage(code)
+                                                LocaleHelper.setLocale(context, code)
+                                                showLanguageDialog = false
+                                                (context as? android.app.Activity)?.recreate()
+                                            }
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showLanguageDialog = false }) {
+                            Text(context.getString(R.string.cancel))
+                        }
+                    }
+                )
+            }
+
+            // 🔄 Sync Settings
+            SettingsCard(title = "Sync Settings") {
+                TextButton(
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            taskViewModel.syncTasks()
+                            scope.launch(Dispatchers.Main) {
+                                Toast.makeText(context, "Sync completed", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Sync, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Sync Tasks Now")
+                }
+                Text(
+                    text = "Syncs pending offline changes with server",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                )
             }
 
             // 🧾 Data Settings
@@ -163,6 +361,8 @@ fun SettingsScreen(
 
                 TextButton(onClick = {
                     auth.signOut()
+                    // Clear saved credentials on logout
+                    credentialManager.clearCredentials()
                     navController.navigate(Routes.Login) {
                         popUpTo(Routes.Login) { inclusive = true }
                     }
@@ -180,19 +380,26 @@ fun SettingsScreen(
 @Composable
 fun SettingsCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     val colors = MaterialTheme.colorScheme
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.surface, RoundedCornerShape(16.dp))
-            .padding(16.dp)
+            .shadow(4.dp, RoundedCornerShape(20.dp), spotColor = colors.primary.copy(alpha = 0.1f)),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Text(
-            text = title,
-            fontWeight = FontWeight.Bold,
-            color = colors.primary,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-        content()
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium,
+                color = colors.primary,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            content()
+        }
     }
 }
 
@@ -201,6 +408,7 @@ fun SettingRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     checked: Boolean,
+    enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
@@ -212,13 +420,21 @@ fun SettingRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, tint = colors.primary)
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = if (enabled) colors.primary else colors.onSurface.copy(alpha = 0.38f)
+            )
             Spacer(Modifier.width(8.dp))
-            Text(title, color = colors.onSurface)
+            Text(
+                title,
+                color = if (enabled) colors.onSurface else colors.onSurface.copy(alpha = 0.38f)
+            )
         }
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
+            enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = colors.primary,
                 checkedTrackColor = colors.primary.copy(alpha = 0.54f),

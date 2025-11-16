@@ -4,11 +4,13 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
@@ -180,13 +182,15 @@ fun TaskStatusCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 84.dp),
-        shape = RoundedCornerShape(16.dp),
+            .heightIn(min = 84.dp)
+            .shadow(6.dp, RoundedCornerShape(18.dp), spotColor = priorityTint.copy(alpha = 0.2f)),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = colors.surface,
             contentColor = colors.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(1.dp, priorityTint.copy(alpha = 0.15f))
     ) {
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             // Left priority stripe

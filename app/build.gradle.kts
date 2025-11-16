@@ -76,6 +76,14 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    
+    // -------------------------------
+    // 💾 Room Database (Offline Support)
+    // -------------------------------
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
     implementation(libs.androidx.compose.foundation)
 
     // Authentication
@@ -87,14 +95,6 @@ dependencies {
     implementation(libs.androidx.junit.ktx)
 
     // -------------------------------
-    // 💾 Room (local DB)
-    // -------------------------------
-    val roomVersion = "2.6.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
-
-    // -------------------------------
     // ⏰ WorkManager
     // -------------------------------
     implementation("androidx.work:work-runtime-ktx:2.9.1")
@@ -103,6 +103,16 @@ dependencies {
     // 🗄️ DataStore
     // -------------------------------
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // -------------------------------
+    // 🔐 Biometric Authentication
+    // -------------------------------
+    implementation("androidx.biometric:biometric:1.1.0")
+    
+    // -------------------------------
+    // 🔒 Security (Encrypted SharedPreferences)
+    // -------------------------------
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // -------------------------------
     // 🧪 Testing

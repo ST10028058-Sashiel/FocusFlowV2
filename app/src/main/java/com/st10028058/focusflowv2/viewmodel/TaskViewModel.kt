@@ -1,24 +1,35 @@
 package com.st10028058.focusflowv2.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.st10028058.focusflowv2.data.Task
 import com.st10028058.focusflowv2.data.TaskRepository
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class TaskViewModel : ViewModel() {
-    private val repository = TaskRepository()
+class TaskViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = TaskRepository(application)
+    private val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
-    val tasks: StateFlow<List<Task>> get() = _tasks
+    // Use Flow from repository for reactive updates
+    val tasks: StateFlow<List<Task>> = repository.getTasks(userId)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
-    // 🔄 Fetch all tasks
+    // 🔄 Fetch all tasks from server and sync
     fun fetchTasks() {
         viewModelScope.launch {
-            val res = repository.getTasks()
-            if (res.isSuccessful) _tasks.value = res.body().orEmpty()
+            // First sync pending tasks
+            repository.syncPendingTasks()
+            // Then fetch latest from server
+            repository.fetchTasksFromServer()
         }
     }
 
@@ -26,33 +37,44 @@ class TaskViewModel : ViewModel() {
     fun addTask(task: Task) {
         viewModelScope.launch {
             repository.addTask(task)
-            fetchTasks()
+            // Sync in background
+            repository.syncPendingTasks()
         }
     }
 
     // ➕ Add task and return created instance
     suspend fun addTaskAndReturn(task: Task): Task? {
         val res = repository.addTask(task)
-        if (res.isSuccessful) {
-            fetchTasks()
-            return res.body()
+        // Sync in background
+        viewModelScope.launch {
+            repository.syncPendingTasks()
         }
-        return null
+        return res.body()
     }
 
     // ✏️ Update task
     fun updateTask(id: String, task: Task) {
         viewModelScope.launch {
-            val res = repository.updateTask(id, task)
-            if (res.isSuccessful) fetchTasks()
+            repository.updateTask(id, task)
+            // Sync in background
+            repository.syncPendingTasks()
         }
     }
 
     // ❌ Delete task
     fun deleteTask(id: String) {
         viewModelScope.launch {
-            val res = repository.deleteTask(id)
-            if (res.isSuccessful) fetchTasks()
+            repository.deleteTask(id)
+            // Sync in background
+            repository.syncPendingTasks()
+        }
+    }
+    
+    // 🔄 Sync pending tasks manually
+    fun syncTasks() {
+        viewModelScope.launch {
+            repository.syncPendingTasks()
+            repository.fetchTasksFromServer()
         }
     }
 

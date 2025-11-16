@@ -1,7 +1,6 @@
 package com.st10028058.focusflowv2.ui.auth
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +19,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.shadow
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.st10028058.focusflowv2.R
@@ -75,14 +75,6 @@ fun RegisterScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.focusflow_logo),
-                contentDescription = "FocusFlow Logo",
-                modifier = Modifier
-                    .size(100.dp)
-                    .padding(bottom = 10.dp)
-            )
-
             Text(
                 "FOCUSFLOW",
                 fontWeight = FontWeight.Bold,
@@ -99,10 +91,12 @@ fun RegisterScreen(navController: NavController) {
             )
 
             Card(
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(10.dp),
-                modifier = Modifier.fillMaxWidth()
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(8.dp, RoundedCornerShape(28.dp), spotColor = Color.Black.copy(alpha = 0.1f))
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,

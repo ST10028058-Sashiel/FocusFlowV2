@@ -1,21 +1,25 @@
 package com.st10028058.focusflowv2.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.st10028058.focusflowv2.ui.nav.Routes
+import com.st10028058.focusflowv2.ui.screens.LocationPickerDialog
 import com.st10028058.focusflowv2.viewmodel.TaskViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -37,6 +41,7 @@ fun UpdateTaskScreen(
     var priority by remember { mutableStateOf(task?.priority ?: "Normal") }
     var reminder by remember { mutableStateOf(task?.reminderOffsetMinutes?.toString() ?: "10") }
     var completed by remember { mutableStateOf(task?.completed ?: false) }
+    var showLocationDialog by remember { mutableStateOf(false) }
 
     if (task == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -101,13 +106,67 @@ fun UpdateTaskScreen(
                 colors = fieldColors
             )
 
-            OutlinedTextField(
-                value = location,
-                onValueChange = { location = it },
-                label = { Text("Location") },
+            // Location picker
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                colors = fieldColors
-            )
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = location,
+                    onValueChange = { location = it },
+                    label = { Text("Location") },
+                    modifier = Modifier.weight(1f),
+                    colors = fieldColors,
+                    trailingIcon = {
+                        if (location.isNotBlank()) {
+                            IconButton(onClick = { location = "" }) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Clear",
+                                    modifier = Modifier.rotate(180f)
+                                )
+                            }
+                        }
+                    }
+                )
+                
+                Button(
+                    onClick = {
+                        // Try to open Maps, if it fails show dialog
+                        try {
+                            val mapsIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = android.net.Uri.parse("https://www.google.com/maps/search/?api=1&query=")
+                                setPackage("com.google.android.apps.maps")
+                            }
+                            if (mapsIntent.resolveActivity(context.packageManager) != null) {
+                                context.startActivity(mapsIntent)
+                                Toast.makeText(
+                                    context,
+                                    "Search for a location in Maps, then enter it in the location field",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                // Fallback: Show dialog
+                                showLocationDialog = true
+                            }
+                        } catch (e: Exception) {
+                            showLocationDialog = true
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.secondary,
+                        contentColor = colors.onSecondary
+                    ),
+                    modifier = Modifier.height(56.dp)
+                ) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = "Pick Location",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
 
             // Priority Dropdown
             var expanded by remember { mutableStateOf(false) }
@@ -154,6 +213,18 @@ fun UpdateTaskScreen(
                 Text(
                     text = if (completed) "Completed" else "Mark as Completed",
                     color = if (completed) colors.primary else colors.onSurfaceVariant
+                )
+            }
+
+            // Location picker dialog
+            if (showLocationDialog) {
+                LocationPickerDialog(
+                    currentLocation = location,
+                    onLocationSelected = { selectedLocation ->
+                        location = selectedLocation
+                        showLocationDialog = false
+                    },
+                    onDismiss = { showLocationDialog = false }
                 )
             }
 

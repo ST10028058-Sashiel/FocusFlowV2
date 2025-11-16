@@ -2,6 +2,7 @@ package com.st10028058.focusflowv2.ui.screens
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,11 +13,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -27,10 +30,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.shadow
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
 import com.st10028058.focusflowv2.data.Task
+import com.st10028058.focusflowv2.notifications.TaskNotificationManager
 import com.st10028058.focusflowv2.notifications.TaskReminderScheduler
 import com.st10028058.focusflowv2.ui.nav.Routes
 import com.st10028058.focusflowv2.viewmodel.TaskViewModel
@@ -59,6 +64,7 @@ fun AddTaskScreen(
     var endTime by remember { mutableStateOf<Long?>(null) }
     var reminderOffset by remember { mutableStateOf(10) }
     var location by remember { mutableStateOf("") }
+    var showLocationDialog by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
     val colors = MaterialTheme.colorScheme
@@ -134,8 +140,19 @@ fun AddTaskScreen(
 
                             CoroutineScope(Dispatchers.Main).launch {
                                 val savedTask = viewModel.addTaskAndReturn(newTask)
-                                if (savedTask != null && savedTask.startTime != null && savedTask.reminderOffsetMinutes != null) {
-                                    TaskReminderScheduler.schedule(context, savedTask)
+                                if (savedTask != null) {
+                                    // Show real-time notification that task was added
+                                    TaskNotificationManager.showTaskAddedNotification(
+                                        context = context,
+                                        taskTitle = savedTask.title,
+                                        taskPriority = savedTask.priority
+                                    )
+                                    
+                                    // Schedule reminder if task has start time and reminder
+                                    if (savedTask.startTime != null && savedTask.reminderOffsetMinutes != null) {
+                                        TaskReminderScheduler.schedule(context, savedTask)
+                                    }
+                                    
                                     Toast.makeText(context, "Task added successfully", Toast.LENGTH_SHORT).show()
                                     navController.popBackStack()
                                 } else {
@@ -146,13 +163,17 @@ fun AddTaskScreen(
                     },
                     containerColor = colors.secondary,
                     contentColor = colors.onSecondary,
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(
+                        defaultElevation = 8.dp,
+                        pressedElevation = 12.dp
+                    ),
                     modifier = Modifier
                         .padding(8.dp)
                         .size(60.dp)
-                        .shadow(10.dp, RoundedCornerShape(20.dp))
+                        .shadow(10.dp, RoundedCornerShape(16.dp), spotColor = colors.secondary.copy(alpha = 0.4f))
                 ) {
-                    Icon(Icons.Filled.Save, contentDescription = "Save")
+                    Icon(Icons.Filled.Save, contentDescription = "Save", modifier = Modifier.size(28.dp))
                 }
             }
         ) { innerPadding ->
@@ -399,14 +420,81 @@ fun AddTaskScreen(
 
                         Divider(color = colors.surfaceVariant)
 
-                        OutlinedTextField(
-                            value = location,
-                            onValueChange = { location = it },
-                            label = { Text("Location (optional)") },
+                        // Location picker
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            colors = fieldColors
-                        )
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = location,
+                                onValueChange = { location = it },
+                                label = { Text("Location (optional)") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                colors = fieldColors,
+                                trailingIcon = {
+                                    if (location.isNotBlank()) {
+                                        IconButton(onClick = { location = "" }) {
+                                            Icon(
+                                                Icons.Default.ArrowBack,
+                                                contentDescription = "Clear",
+                                                modifier = Modifier.rotate(180f)
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                            
+                            // Location picker button
+                            Button(
+                                onClick = {
+                                    // Try to open Maps, if it fails show dialog
+                                    try {
+                                        val mapsIntent = Intent(Intent.ACTION_VIEW).apply {
+                                            data = android.net.Uri.parse("https://www.google.com/maps/search/?api=1&query=")
+                                            setPackage("com.google.android.apps.maps")
+                                        }
+                                        if (mapsIntent.resolveActivity(context.packageManager) != null) {
+                                            context.startActivity(mapsIntent)
+                                            Toast.makeText(
+                                                context,
+                                                "Search for a location in Maps, then enter it in the location field",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        } else {
+                                            // Fallback: Show dialog
+                                            showLocationDialog = true
+                                        }
+                                    } catch (e: Exception) {
+                                        showLocationDialog = true
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colors.secondary,
+                                    contentColor = colors.onSecondary
+                                ),
+                                modifier = Modifier.height(56.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.LocationOn,
+                                    contentDescription = "Pick Location",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        
+                        // Location picker dialog
+                        if (showLocationDialog) {
+                            LocationPickerDialog(
+                                currentLocation = location,
+                                onLocationSelected = { selectedLocation ->
+                                    location = selectedLocation
+                                    showLocationDialog = false
+                                },
+                                onDismiss = { showLocationDialog = false }
+                            )
+                        }
                     }
                 }
 
@@ -414,6 +502,96 @@ fun AddTaskScreen(
             }
         }
     }
+}
+
+/**
+ * Location Picker Dialog - allows manual entry with common location suggestions
+ */
+@Composable
+fun LocationPickerDialog(
+    currentLocation: String,
+    onLocationSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var searchText by remember { mutableStateOf(currentLocation) }
+    val colors = MaterialTheme.colorScheme
+    
+    val commonLocations = listOf(
+        "Home", "Office", "Gym", "Restaurant", "Park", "School", "Hospital",
+        "Airport", "Hotel", "Shopping Mall", "Library", "Coffee Shop"
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Pick Location", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    label = { Text("Enter location name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = colors.surface,
+                        unfocusedContainerColor = colors.surface
+                    )
+                )
+                
+                Text(
+                    "Or select a common location:",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+                
+                // Common locations chips
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    commonLocations.chunked(3).forEach { rowLocations ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            rowLocations.forEach { loc ->
+                                FilterChip(
+                                    selected = searchText.equals(loc, ignoreCase = true),
+                                    onClick = { searchText = loc },
+                                    label = { Text(loc) },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            // Fill remaining space if row has less than 3 items
+                            repeat(3 - rowLocations.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (searchText.isNotBlank()) {
+                        onLocationSelected(searchText.trim())
+                    }
+                },
+                enabled = searchText.isNotBlank()
+            ) {
+                Text("Select")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
@@ -475,5 +653,82 @@ fun StyledActionButton(label: String, color: Color, onClick: () -> Unit) {
             .height(48.dp)
     ) {
         Text(label, fontWeight = FontWeight.Medium)
+    }
+}
+
+/**
+ * Helper function to pick location - opens Maps with search functionality
+ */
+fun pickLocationFromMap(context: android.content.Context, onLocationSelected: (String) -> Unit) {
+    try {
+        // Try multiple approaches to open a map/location picker
+        
+        // Approach 1: Try Google Maps with search intent
+        try {
+            val mapsIntent = Intent(Intent.ACTION_VIEW).apply {
+                data = android.net.Uri.parse("https://www.google.com/maps/search/?api=1&query=")
+                setPackage("com.google.android.apps.maps")
+            }
+            if (mapsIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(mapsIntent)
+                Toast.makeText(
+                    context,
+                    "Search for a location in Maps, then copy the name to the location field",
+                    Toast.LENGTH_LONG
+                ).show()
+                return
+            }
+        } catch (e: Exception) {
+            // Continue to next approach
+        }
+        
+        // Approach 2: Try generic maps search
+        try {
+            val geoIntent = Intent(Intent.ACTION_VIEW).apply {
+                data = android.net.Uri.parse("geo:0,0?q=")
+            }
+            if (geoIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(geoIntent)
+                Toast.makeText(
+                    context,
+                    "Search for a location, then enter it in the location field",
+                    Toast.LENGTH_LONG
+                ).show()
+                return
+            }
+        } catch (e: Exception) {
+            // Continue to next approach
+        }
+        
+        // Approach 3: Try opening browser with Google Maps
+        try {
+            val browserIntent = Intent(Intent.ACTION_VIEW).apply {
+                data = android.net.Uri.parse("https://www.google.com/maps")
+            }
+            if (browserIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(browserIntent)
+                Toast.makeText(
+                    context,
+                    "Search for a location in Google Maps, then enter it in the location field",
+                    Toast.LENGTH_LONG
+                ).show()
+                return
+            }
+        } catch (e: Exception) {
+            // Fall through
+        }
+        
+        // If all else fails, show message
+        Toast.makeText(
+            context,
+            "No map app found. Please enter location manually in the text field.",
+            Toast.LENGTH_LONG
+        ).show()
+    } catch (e: Exception) {
+        Toast.makeText(
+            context,
+            "Could not open maps. Please enter location manually.",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 }
