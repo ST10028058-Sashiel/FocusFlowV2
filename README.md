@@ -262,9 +262,9 @@ npm start
 * Firebase Auth
 * Google Sign-In
 * Retrofit
-* RoomDB
 * Coroutines
 * AlarmManager
+* STORES INFORMATION LOCALLY
 
 ### Backend
 
@@ -273,6 +273,7 @@ npm start
 * bcrypt.js
 * JWT
 * dotenv
+* MongoDB with API
 
 ---
 
