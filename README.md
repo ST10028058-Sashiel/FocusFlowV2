@@ -52,6 +52,7 @@ The following features are implemented exactly according to the official PROG731
 # 🟩 **B. Custom Student-Implemented Features (Task Management System)**
 
 All task-related features were designed and implemented by the development team and **are not required by the POE**.
+Features 1 to 14 available below 
 
 | #  | **Custom Feature**        | **Description**                                                            |
 | -- | ------------------------- | -------------------------------------------------------------------------- |
