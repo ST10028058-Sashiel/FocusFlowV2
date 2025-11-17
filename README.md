@@ -73,7 +73,6 @@ To prevent accidental or unauthorized actions, biometric authentication is requi
 Supports:
 
 * **Fingerprint**
-* **Face Unlock**
 
 ---
 
