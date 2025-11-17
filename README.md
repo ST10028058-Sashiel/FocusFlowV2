@@ -64,7 +64,7 @@ Features 1 to 14 available below
 | 6  | **Task Filtering**        | Filter tasks by priority or completion status.                             |
 | 7  | **Task Sorting**          | Sort tasks by Newest, Oldest, or Priority.                                 |
 | 8  | **Task Counter**          | Displays the number of active tasks.                                       |
-| 9  | **Share Task**            | Share task details via WhatsApp, SMS.                                      |
+| 9  | **Share Task Button**     | Share task details via WhatsApp, SMS.                                      |
 | 10 | **Export CV**             | Send tasks through an advanced exportation feature through email           |
 | 11 | **Advanced Reminders**    | Scheduled notifications before task deadlines.                             |
 | 12 | **Enhanced UI/UX**        | Material 3 design, gradient theme, animations, accessibility improvements. |
