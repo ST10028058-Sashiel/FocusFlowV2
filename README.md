@@ -24,127 +24,215 @@ The POE demonstrates skills in **mobile app development**, **RESTful API integra
 
 ### 🔍 **POE Requirements & Implementations**
 
-| **POE Requirement**    | **Implementation**                                                                                                                                            |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **SSO Authentication** | Integrated **Google Sign-In (OAuth 2.0)** via **Firebase** for secure and seamless login.                                                                     |
-| **Settings Feature**   | Added a 1. **Dark Mode / Light Mode Toggle  + 2. **Delete Account** button that removes user credentials and associated task data permanently from both **Firebase Authentication** and **MongoDB**** to enhance usability and accessibility + 3.Export CSV file through email containing all the tasks in an excel file.                                                                             |
+| **POE Requirement**    | **Implementation**                                                                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **SSO Authentication** | Integrated **Google Sign-In (OAuth 2.0)** via **Firebase** for secure and seamless login.                                                    |
+| **Settings Feature**   | Added a **Dark/Light Mode Toggle**, **Delete Account** (removes data from Firebase + MongoDB), and **Export CSV via email** for task backup. |
 
 ---
 
-## 💡 ** PART 1 STATED  Student-Implemented Features**
+## 💡 **PART 1 – Student-Implemented Features**
 
-In addition to POE requirements, the following features were designed and developed by the team to improve functionality and engagement:
+| # | **Feature**                                 | **Description**                                                          |
+| - | --------------------------------------------|------------------------------------------------------------------------- |
+| 1 | **Add a Task**                              | Users can create tasks by entering a name, location, due date, and time. |
+| 2 | **Task Filtering**                          | Filter tasks based on priority levels for quick navigation.              |
+| 3 | **Sorting Options**                         | Sort tasks by **Oldest**, **Newest**, or **Priority (High → Low)**.      |
+| 4 | **Priority Setter**                         | Assign urgency levels — *Low, Medium, High, Critical*.                   |
+| 5 | **Real time Reminder Notifications**        | Notifications triggered before task start using AlarmManager.            |
+| 6 | **Task Counter**                            | Displays total number of pending tasks.                                  |
+| 7 | **Update Tasks**                            | Modify existing task information.                                        |
+| 8 | **Delete Tasks**                            | Permanently removes a task.                                              |
+| 9 | **Mark as Complete**                        | Moves tasks to the Completed list instantly.                             |
 
-| # | **Feature**                | **Description**                                                                                    |
-| - | -------------------------- | -------------------------------------------------------------------------------------------------- |
-| 1 | **Add a Task**             | Users can create tasks by entering a name, location, due date, and time.                           |
-| 2 | **Task Filtering**         | Filter tasks based on priority levels for quick navigation.                                        |
-| 3 | **Sorting Options**        | Sort tasks by **Oldest**, **Newest**, or **Priority (High → Low)**.                                |
-| 4 | **Priority Setter**        | Tag tasks with urgency levels — *Low, Medium, High, Critical* — to stay focused.                   |
-| 5 | **Reminder Notifications** | Set reminders minutes before tasks begin; notifications pop up automatically using Android alarms. |
-| 6 | **Task Counter**           | Displays the total number of pending tasks to track user progress visually.                        |
-| 7 | **Update Tasks**           | Modify existing task information (title, priority, etc.).                                          |
-| 8 | **Delete Tasks**           | Remove tasks permanently at any time.                                                              |
-| 9 | **Mark as Complete**       | Tick off tasks as completed and move them to the “Completed” list instantly.                       |
+
+# 🚀 **PART 2 – SUMMATIVE FEATURES (Advanced Enhancements)**
+
+FocusFlowV2 includes a set of **advanced summative features** designed to improve usability, security, accessibility, and real-world reliability.
+
+## ✨ 1. **Share Task Functionality**
+
+Users can instantly share task details via:
+
+* WhatsApp
+* Email
+* SMS
+* Social media apps
+
+A formatted summary includes title, date, time, priority, and location.
+This enables collaboration and real-world teamwork.
+
+---
+
+## 🔐 2. **Biometric Authentication for Task Status Changes**
+
+To prevent accidental or unauthorized actions, biometric authentication is required for:
+
+* Marking tasks as *Complete*
+* Updating priority
+* Deleting tasks
+
+Supports:
+
+* **Fingerprint**
+* **Face Unlock**
+
+---
+
+## 🌍 3. **Multi-Language Support (Afrikaans + isiZulu)**
+
+The app supports three languages:
+
+* 🇬🇧 English
+* 🇿🇦 Afrikaans
+* 🇿🇦 isiZulu
+
+All UI text automatically updates based on system language.
+
+---
+
+## 🔔 4. **Real-Time Notifications**
+
+Two notification systems:
+
+### ✔ Instant Task Creation Notification
+
+Pops up immediately after adding a task.
+
+### ✔ Scheduled Reminder Notification
+
+Alerts users shortly before task start (customizable lead time).
+
+---
+
+## 📶 5. **Offline Mode + Automatic Cloud Sync**
+
+Full functionality while offline:
+
+* Add tasks
+* Update tasks
+* Delete tasks
+* Mark complete
+
+All changes store in **Locally and MongoDB with API** and sync automatically when connection is restored.
+
+---
+
+
+---
+
+## 🧪 6. **Unit Testing (Video Included)**
+
+Covers:
+
+* ViewModel tests
+* Business logic validation
+* API call mocking
+* Syncing reliability tests
+
+📹 **Unit Test Video:**
+[https://drive.google.com/file/d/145MXywRNL-MseXETwYiAUxR1qV6f6bGu/view?usp=sharing](https://drive.google.com/file/d/145MXywRNL-MseXETwYiAUxR1qV6f6bGu/view?usp=sharing)
 
 ---
 
 ## 🎨 **Design & User Experience**
 
-**FocusFlowV2** uses a vibrant **purple gradient theme** symbolizing creativity, focus, and calmness.
-Designed following **Material 3 guidelines**, ensuring:
+FocusFlowV2 uses a vibrant **purple gradient theme** symbolizing creativity, focus, and calmness, following **Material 3** guidelines.
 
-* 🎨 Adaptive light/dark color schemes
-* ✏️ Consistent typography and spacing
-* ⚡ Smooth animations for transitions and task updates
-
-Every screen was designed with **clarity and usability** in mind — optimized for a **mobile-first experience**.
+* Adaptive light/dark mode
+* Smooth animations
+* Clean typography and spacing
+* Mobile-first layouts
 
 ---
 
 ## ⚙️ **Technology Stack**
 
-| **Layer**          | **Technology**                           | **Description**                                                           |
-| ------------------ | ---------------------------------------- | ------------------------------------------------------------------------- |
-| **Frontend**       | **Kotlin (Jetpack Compose)**             | Declarative UI for Android, providing modern performance and flexibility. |
-| **Backend**        | **Node.js + Express**                    | API layer for CRUD operations and authentication routing.                 |
-| **Database**       | **MongoDB (Cloud)**                      | Stores user data and task details efficiently.                            |
-| **Authentication** | **Firebase Authentication + Google SSO** | Secure, user-friendly login using Google accounts.                        |
-| **Hosting**        | **Render.com**                           | Deployed backend with continuous cloud hosting.                           |
-| **IDE**            | **Android Studio**                       | For Kotlin development, Gradle management, and UI design.                 |
+| **Layer**          | **Technology**           | **Description**                |
+| ------------------ | ------------------------ | ------------------------------ |
+| **Frontend**       | Kotlin (Jetpack Compose) | Modern declarative Android UI. |
+| **Backend**        | Node.js + Express        | REST API for tasks & auth.     |
+| **Database**       | MongoDB (Cloud)          | Scalable NoSQL data storage.   |
+| **Authentication** | Firebase + Google SSO    | Secure login.                  |
+| **Hosting**        | Render.com               | Cloud deployment for backend.  |
+| **IDE**            | Android Studio           | Development environment.       |
 
 ---
 
 ## 🧠 **Architecture**
 
-The app follows the **MVVM (Model-View-ViewModel)** architecture pattern:
+Follows **MVVM** pattern:
 
-* **Model** → Defines data entities and handles network communication.
-* **ViewModel** → Manages business logic and interacts between data and UI.
-* **View** → Reactive UI layer built with Jetpack Compose.
+* **Model** — Data entities + API communication
+* **ViewModel** — Business logic, state handling
+* **View** — Jetpack Compose UI
 
-Data syncs between **RoomDB (local storage)** and **MongoDB (cloud)** via RESTful API endpoints.
+Data sync between **RoomDB** (offline) and **MongoDB** (online).
 
 ---
 
 ## 🚀 **Core Screens**
 
-* 🔐 **Login / Register Screen** — Firebase + Google SSO Authentication.
-* 🏠 **Home Dashboard** — Quick overview of tasks, stats, and focus insights.
-* 📝 **Add Task Screen** — Create and edit tasks with time, location, and priority.
-* 📋 **Task Status Screen** — View completed and outstanding tasks in one place.
-* ⚙️ **Settings Screen** — Toggle dark/light mode, delete account, and manage preferences.
+* 🔐 Login Screen
+* 🏠 Home Dashboard
+* 📝 Add Task Screen
+* 📋 Task Status Screen
+* ⚙️ Settings Screen
 
 ---
 
 ## 🔗 **Project Links**
 
-### 💻 **Frontend (Android App)**
+### 💻 Frontend
 
-👉 [GitHub Repository – FocusFlowV2](https://github.com/ST10028058-Sashiel/FocusFlowV2.git)
+👉 [https://github.com/ST10028058-Sashiel/FocusFlowV2.git](https://github.com/ST10028058-Sashiel/FocusFlowV2.git)
 
-### ⚙️ **Backend API**
+### ⚙️ Backend API
 
+👉 [https://github.com/MoltenBog4/focusflow-api.git](https://github.com/MoltenBog4/focusflow-api.git)
 
-👉 [Hosted API – Render](https://focusflow-api-ts06.onrender.com)
+### 🌍 Hosted API
+
+👉 [https://focusflow-api-ts06.onrender.com](https://focusflow-api-ts06.onrender.com)
 
 ---
 
 ## 🌐 **API Documentation**
 
-**Base URL:**
+Base URL:
 
 ```
 https://focusflow-api-ts06.onrender.com
 ```
 
-| **Method** | **Endpoint**        | **Description**            |
-| ---------- | ------------------- | -------------------------- |
-| `POST`     | `/users/register`   | Register new user account  |
-| `POST`     | `/users/login`      | Authenticate existing user |
-| `DELETE`   | `/users/delete/:id` | Delete user account        |
-| `GET`      | `/tasks`            | Retrieve all user tasks    |
-| `POST`     | `/tasks`            | Create a new task          |
-| `PUT`      | `/tasks/:id`        | Update task details        |
-| `DELETE`   | `/tasks/:id`        | Delete a task              |
+| Method | Endpoint            | Description         |
+| ------ | ------------------- | ------------------- |
+| POST   | `/users/register`   | Register a new user |
+| POST   | `/users/login`      | Log in a user       |
+| DELETE | `/users/delete/:id` | Delete account      |
+| GET    | `/tasks`            | Retrieve tasks      |
+| POST   | `/tasks`            | Create task         |
+| PUT    | `/tasks/:id`        | Update task         |
+| DELETE | `/tasks/:id`        | Delete task         |
 
 ---
 
 ## 🎥 **YouTube Demonstration**
 
-📺 **FocusFlowV2 – Final POE Demo Video**
-https://youtu.be/Jz4rFbhzQGI?si=PkdkIOF2if381a1z
+📺 **Final POE Demo Video:**
+[https://youtu.be/Jz4rFbhzQGI?si=PkdkIOF2if381a1z](https://youtu.be/Jz4rFbhzQGI?si=PkdkIOF2if381a1z)
+
 ---
 
 ## 📦 **Installation & Setup**
 
-### 1️⃣ Clone the Frontend
+### 1️⃣ Clone Frontend
 
 ```bash
 git clone https://github.com/ST10028058-Sashiel/FocusFlowV2.git
 ```
 
-### 2️⃣ Clone the Backend
+### 2️⃣ Clone Backend
 
 ```bash
 git clone https://github.com/MoltenBog4/focusflow-api.git
@@ -157,33 +245,34 @@ npm install
 npm start
 ```
 
-### 4️⃣ Open and Run the App
+### 4️⃣ Run the App
 
-1. Open **FocusFlowV2** in Android Studio.
-2. Sync Gradle and connect your Firebase project.
-3. Run the app on an emulator or physical device.
+1. Open in Android Studio
+2. Connect Firebase
+3. Sync Gradle
+4. Run on emulator/device
 
 ---
 
 ## 🧩 **Dependencies**
 
-### 🔹 Frontend
+### Frontend
 
-* Jetpack Compose (Material 3)
-* Firebase Authentication
-* Google Sign-In SDK
-* Retrofit (API communication)
-* Room Database
-* Kotlin Coroutines
-* Android AlarmManager (Reminders)
+* Jetpack Compose
+* Firebase Auth
+* Google Sign-In
+* Retrofit
+* RoomDB
+* Coroutines
+* AlarmManager
 
-### 🔹 Backend
+### Backend
 
 * Express.js
-* Mongoose (MongoDB ODM)
-* bcrypt.js (Password encryption)
-* jsonwebtoken (Authentication)
-* dotenv (Environment variables)
+* Mongoose
+* bcrypt.js
+* JWT
+* dotenv
 
 ---
 
@@ -196,29 +285,24 @@ npm start
 * [OWASP Foundation. (2024). *Mobile Security Best Practices.*](https://owasp.org/www-project-mobile-top-10/)
 * [OpenAI. (2025). *Project Documentation Support via ChatGPT.*](https://chat.openai.com)
 
----
 
 ## 🏁 **Authors**
 
-🏁 Authors
-👨‍💻 Developers
-Name	Student ID	Role
-Sashiel Moonsamy	ST10028058	
-Nikhil Saroop	ST10040092	
-Kiyashan Nadasen	ST10203525	
-🏫 Institution Details
+Sashiel Moonsamy – ST10028058
+Nikhil Saroop – ST10040092
+Kiyashan Nadasen – ST10203525
 
-Module: PROG7315 – Programming 3D
-
-Institution: The IIE Varsity College
-
+Module: PROG7314 — Programming 3D
+Institution: Varsity College
 Year: 2025
+
+---
 
 ## 🧾 **License**
 
-This project is licensed under the **MIT License**.
-You may modify, distribute, and reuse it with proper attribution.
+MIT License.
 
 ---
 
 ### ✨ *“Plan better. Focus deeper. Achieve more — with FocusFlowV2.”*
+
