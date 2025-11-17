@@ -31,7 +31,7 @@ The POE demonstrates skills in **mobile app development**, **RESTful API integra
 
 ---
 
-## 💡 **PART 1 – Student-Implemented Features**
+## 💡 **PART 2  AND SUMMATIVE FEATURES– Student-Implemented Features**
 
 | # | **Feature**                                 | **Description**                                                          |
 | - | --------------------------------------------|------------------------------------------------------------------------- |
@@ -45,8 +45,6 @@ The POE demonstrates skills in **mobile app development**, **RESTful API integra
 | 8 | **Delete Tasks**                            | Permanently removes a task.                                              |
 | 9 | **Mark as Complete**                        | Moves tasks to the Completed list instantly.                             |
 
-
-# 🚀 **PART 2 – SUMMATIVE FEATURES (Advanced Enhancements)**
 
 FocusFlowV2 includes a set of **advanced summative features** designed to improve usability, security, accessibility, and real-world reliability.
 
