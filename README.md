@@ -41,7 +41,7 @@ The following features are implemented exactly according to the official PROG731
 | - | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1 | **Single Sign-On (SSO)**     | Users register and log in through Google Sign-In using Firebase Authentication (OAuth 2.0). Provides secure identity management and token-based authentication. |
 | 2 | **Biometric Authentication** | Fingerprint authentication implemented to protect sensitive operations (e.g., editing, deleting, completing tasks).                                             |
-| 3 | **Settings Management**      | Users can modify app settings including theme, language, and account management.                                                                        |
+| 3 | **Settings Management**      | Users can modify app settings including theme , export custom feasture , Biometric Authetication, language, and account management.                                                                        |
 | 4 | **REST API Integration**     | App connects to a custom Node.js + Express REST API, storing all user tasks in MongoDB Atlas.                                                                   |
 | 5 | **Offline Mode with Sync**   | Users can add, edit, delete, and complete tasks offline. Automatic synchronisation occurs when internet is detected.                                            |
 | 6 | **Real-Time Notifications**  | Push-style notifications implemented using AlarmManager. Includes instant task creation alerts plus scheduled reminders.                                        |
