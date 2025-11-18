@@ -41,7 +41,7 @@ The following features are implemented exactly according to the official PROG731
 | - | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1 | **Single Sign-On (SSO)**     | Users register and log in through Google Sign-In using Firebase Authentication (OAuth 2.0). Provides secure identity management and token-based authentication. |
 | 2 | **Biometric Authentication** | Fingerprint authentication implemented to protect sensitive operations (e.g., editing, deleting, completing tasks).                                             |
-| 3 | **Settings Management**      | Users can modify app settings including theme , export custom feasture , Biometric Authetication, language, and account management.                                                                        |
+| 3 | **Settings Management**      | Users can modify app settings including theme , export custom feasture , Biometric Authetication,Finger Print register, language, and account management.                                                                        |
 | 4 | **REST API Integration**     | App connects to a custom Node.js + Express REST API, storing all user tasks in MongoDB Atlas.                                                                   |
 | 5 | **Offline Mode with Sync**   | Users can add, edit, delete, and complete tasks offline. Automatic synchronisation occurs when internet is detected.                                            |
 | 6 | **Real-Time Notifications**  | Push-style notifications implemented using AlarmManager. Includes instant task creation alerts plus scheduled reminders.                                        |
@@ -70,6 +70,7 @@ Features 1 to 14 available below
 | 12 | **Enhanced UI/UX**        | Material 3 design, gradient theme, animations, accessibility improvements. |
 | 13 | **Deep Account Deletion** | Deletes user from Firebase and MongoDB cloud storage.                      |
 | 15 | **Gamification**          | Progress bar to let the user know their progress                           |
+| 16 | **Fingerprint Register**  | Allows the user to record a new finger print for their Biometric authetication|
 
 ---
 
