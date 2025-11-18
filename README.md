@@ -180,7 +180,7 @@ FocusFlowV2 uses an **offline-first approach**:
 
 ### When Offline:
 
-* Tasks are stored in RoomDB
+* Tasks are stored locally
 * All actions (create, edit, delete) work normally
 
 ### When Online:
