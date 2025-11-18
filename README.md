@@ -250,16 +250,14 @@ npm start
 * Build and run
 
 ---
+## 📚 **References**
 
-# 📚 **References**
-
-* Android Developers (2024). *Jetpack Compose Overview.*
-* Google (2024). *Firebase Authentication Documentation.*
-* MongoDB (2024). *MongoDB Atlas Documentation.*
-* Render.com (2024). *Node.js Deployment Guide.*
-* OWASP (2024). *Mobile Security Top 10.*
-
----
+* [Android Developers. (2024). *Jetpack Compose Overview.*](https://developer.android.com/jetpack/compose)
+* [Google. (2024). *Firebase Authentication.*](https://firebase.google.com/docs/auth)
+* [MongoDB. (2024). *NoSQL Database Service.*](https://www.mongodb.com/)
+* [Render. (2024). *Deploying Node.js Apps.*](https://render.com/docs)
+* [OWASP Foundation. (2024). *Mobile Security Best Practices.*](https://owasp.org/www-project-mobile-top-10/)
+* [OpenAI. (2025). *Project Documentation Support via ChatGPT.*](https://chat.openai.com)
 
 # 🏁 **Authors**
 
