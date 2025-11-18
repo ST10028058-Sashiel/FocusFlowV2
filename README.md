@@ -69,7 +69,7 @@ Features 1 to 14 available below
 | 11 | **Advanced Reminders**    | Scheduled notifications before task deadlines.                             |
 | 12 | **Enhanced UI/UX**        | Material 3 design, gradient theme, animations, accessibility improvements. |
 | 13 | **Deep Account Deletion** | Deletes user from Firebase and MongoDB cloud storage.                      |
-| 14 | **Unit Testing**          | Includes ViewModel, API mock tests, and offline sync tests.                |
+| 15 | **Gamification**          | Progress bar to let the user know their progress                           |
 
 ---
 
