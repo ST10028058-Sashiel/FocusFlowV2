@@ -187,7 +187,7 @@ FocusFlowV2 uses an **offline-first approach**:
 
 * Queued local changes sync automatically
 * API updates MongoDB with latest changes
-* RoomDB updates reflect cloud state
+* Updates reflect cloud state
 
 This ensures **zero data loss** and consistent behaviour.
 
