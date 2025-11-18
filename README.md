@@ -151,9 +151,7 @@ This ensures scalability, modularity, and testability.
 A complete walkthrough of the application—including POE-required features, task system, offline mode, notifications, and multi-language support—is available here:
 
 👉 **Final POE Demo Video:**
-**[https://youtu.be/Jz4rFbhzQGI?si=PkdkIOF2if381a1z](https://youtu.be/eerI3zjTFww?si=pZt5E7-L1V4JyaLE)**
-👉 **Part 2 Demo Video:**
-**[https://youtu.be/Jz4rFbhzQGI?si=PkdkIOF2if381a1z](https://youtu.be/Jz4rFbhzQGI?si=PkdkIOF2if381a1z)**
+https://youtu.be/toYKPBjGKIU?si=Pa16d-216c59XnCe
 ---
 
 # 🌐 **API Documentation**
